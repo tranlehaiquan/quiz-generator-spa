@@ -106,7 +106,7 @@ export default function QuizPlayer({
             className="rounded-xl flex items-center text-xs text-slate-400 hover:text-slate-200 h-9"
           >
             <ChevronLeft className="h-4 w-4 mr-1" />
-            <span>{t.backBtn}</span>
+            <span>{t('backBtn')}</span>
           </Button>
 
           <div className={`flex items-center space-x-2 px-3 py-1.5 rounded-xl border transition ${
@@ -122,7 +122,7 @@ export default function QuizPlayer({
         {/* Progress bar */}
         <div className="space-y-2">
           <div className="flex justify-between text-xs font-semibold text-slate-500">
-            <span>{t.questionOf} {currentIndex + 1} {t.ofWord} {quiz.questions.length}</span>
+            <span>{t('questionOf')} {currentIndex + 1} {t('ofWord')} {quiz.questions.length}</span>
             <span>{Math.round(progressPct)}%</span>
           </div>
           <Progress value={progressPct} className="h-2 rounded-full" />
@@ -143,7 +143,7 @@ export default function QuizPlayer({
                   ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20 hover:bg-amber-500/20'
                   : 'text-slate-500 hover:text-slate-300'
               }`}
-              title={t.unflagged}
+              title={t('unflagged')}
             >
               <Flag className={`h-4 w-4 ${isFlagged ? 'fill-amber-400' : ''}`} />
             </Button>
@@ -188,7 +188,7 @@ export default function QuizPlayer({
             className="rounded-2xl border-slate-800 bg-slate-900/20 hover:bg-slate-800 hover:text-slate-100 disabled:opacity-30 text-xs px-5 py-5 transition"
           >
             <ChevronLeft className="h-4 w-4 mr-1.5" />
-            <span>{t.prev}</span>
+            <span>{t('prev')}</span>
           </Button>
 
           {/* Question dot indicators */}
@@ -227,11 +227,11 @@ export default function QuizPlayer({
             {currentIndex === quiz.questions.length - 1 ? (
               <>
                 <CheckSquare className="h-4 w-4 mr-1.5" />
-                <span>{t.finishBtn}</span>
+                <span>{t('finishBtn')}</span>
               </>
             ) : (
               <>
-                <span>{t.next}</span>
+                <span>{t('next')}</span>
                 <ChevronRight className="h-4 w-4 ml-1.5" />
               </>
             )}
@@ -245,9 +245,9 @@ export default function QuizPlayer({
           <div className="w-full max-w-md bg-slate-900/95 border border-slate-800 rounded-3xl p-6 shadow-2xl space-y-4">
             <div className="flex items-center space-x-3 text-emerald-400">
               <CheckSquare className="h-6 w-6" />
-              <h3 className="text-xl font-bold text-slate-100">{t.confirmSubmit}</h3>
+              <h3 className="text-xl font-bold text-slate-100">{t('confirmSubmit')}</h3>
             </div>
-            <p className="text-sm text-slate-400">{t.confirmSubmitDesc}</p>
+            <p className="text-sm text-slate-400">{t('confirmSubmitDesc')}</p>
 
             {answeredCount < quiz.questions.length && (
               <div className="flex items-start space-x-2 text-xs text-amber-400 bg-amber-500/5 border border-amber-500/15 p-3 rounded-2xl">
@@ -262,13 +262,13 @@ export default function QuizPlayer({
 
             <div className="flex space-x-3 mt-4 justify-end">
               <Button variant="ghost" className="rounded-xl" onClick={() => setShowSubmitModal(false)}>
-                {t.cancelBtn}
+                {t('cancelBtn')}
               </Button>
               <Button
                 onClick={handleSubmitQuiz}
                 className="rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-5"
               >
-                {t.finishBtn}
+                {t('finishBtn')}
               </Button>
             </div>
           </div>
@@ -280,18 +280,18 @@ export default function QuizPlayer({
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-sm">
           <div className="w-full max-w-md bg-slate-900/95 border border-slate-800 rounded-3xl p-6 shadow-2xl space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-xl font-bold text-slate-100">{t.exitConfirmTitle}</h3>
+              <h3 className="text-xl font-bold text-slate-100">{t('exitConfirmTitle')}</h3>
               <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" onClick={() => setShowExitModal(false)}>
                 <X className="h-4 w-4" />
               </Button>
             </div>
-            <p className="text-sm text-slate-400">{t.exitConfirmDesc}</p>
+            <p className="text-sm text-slate-400">{t('exitConfirmDesc')}</p>
             <div className="flex space-x-3 justify-end">
               <Button variant="ghost" className="rounded-xl" onClick={() => setShowExitModal(false)}>
-                {t.cancelBtn}
+                {t('cancelBtn')}
               </Button>
               <Button variant="destructive" className="rounded-xl" onClick={handleConfirmExit}>
-                {t.exitBtn}
+                {t('exitBtn')}
               </Button>
             </div>
           </div>

@@ -54,21 +54,21 @@ export default function Results({
   }, [pct]);
 
   // Performance feedback evaluation
-  let feedbackTitle = t.perfectTitle;
-  let feedbackDesc = t.perfectDesc;
+  let feedbackTitle = t('perfectTitle');
+  let feedbackDesc = t('perfectDesc');
   let ringColor = "stroke-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.3)]";
 
   if (pct < 100 && pct >= 80) {
-    feedbackTitle = t.brilliantTitle;
-    feedbackDesc = t.brilliantDesc;
+    feedbackTitle = t('brilliantTitle');
+    feedbackDesc = t('brilliantDesc');
     ringColor = "stroke-indigo-400";
   } else if (pct < 80 && pct >= 50) {
-    feedbackTitle = t.passedTitle;
-    feedbackDesc = t.passedDesc;
+    feedbackTitle = t('passedTitle');
+    feedbackDesc = t('passedDesc');
     ringColor = "stroke-amber-400";
   } else if (pct < 50) {
-    feedbackTitle = t.failedTitle;
-    feedbackDesc = t.failedDesc;
+    feedbackTitle = t('failedTitle');
+    feedbackDesc = t('failedDesc');
     ringColor = "stroke-rose-500";
   }
 
@@ -84,7 +84,7 @@ export default function Results({
         <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute bottom-0 left-0 w-32 h-32 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
 
-        <h2 className="text-sm font-bold text-slate-500 uppercase tracking-widest">{t.scoreTitle}</h2>
+        <h2 className="text-sm font-bold text-slate-500 uppercase tracking-widest">{t('scoreTitle')}</h2>
         
         {/* Animated Circular Score Gauge */}
         <div className="relative w-44 h-44 flex items-center justify-center mt-6">
@@ -125,11 +125,11 @@ export default function Results({
         {/* Metrics Grid */}
         <div className="grid grid-cols-2 gap-4 w-full max-w-sm mt-8 border-t border-b border-slate-800/60 py-4 text-xs font-semibold text-slate-500">
           <div className="text-center border-r border-slate-800/40 space-y-1">
-            <p className="uppercase tracking-wider text-[10px] text-slate-500">{t.totalTime}</p>
+            <p className="uppercase tracking-wider text-[10px] text-slate-500">{t('totalTime')}</p>
             <p className="text-base font-extrabold text-slate-300">{timeTakenStr}</p>
           </div>
           <div className="text-center space-y-1">
-            <p className="uppercase tracking-wider text-[10px] text-slate-500">{t.score}</p>
+            <p className="uppercase tracking-wider text-[10px] text-slate-500">{t('score')}</p>
             <p className="text-base font-extrabold text-slate-300">{correctCount} / {totalQuestions}</p>
           </div>
         </div>
@@ -141,7 +141,7 @@ export default function Results({
             className="flex-1 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-5 transition border border-indigo-500"
           >
             <RefreshCw className="h-4 w-4 mr-2" />
-            <span>{t.retake}</span>
+            <span>{t('retake')}</span>
           </Button>
           
           <Button 
@@ -150,7 +150,7 @@ export default function Results({
             className="flex-1 rounded-2xl border-slate-850 bg-slate-950/60 hover:bg-slate-800 text-slate-300 hover:text-slate-100 py-5 transition"
           >
             <Home className="h-4 w-4 mr-2" />
-            <span>{t.home}</span>
+            <span>{t('home')}</span>
           </Button>
         </div>
       </Card>
@@ -158,7 +158,7 @@ export default function Results({
       {/* Detailed Review Section */}
       <div className="space-y-4">
         <h3 className="text-lg font-bold text-slate-300 flex items-center space-x-2">
-          <span>{t.detailsTitle}</span>
+          <span>{t('detailsTitle')}</span>
         </h3>
 
         <div className="space-y-3">
@@ -190,13 +190,13 @@ export default function Results({
                     <div>
                       <h4 className="text-sm font-bold text-slate-200 leading-normal">{q.question}</h4>
                       <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2 text-xs">
-                        <span className="text-slate-500 font-medium">{t.questionOf} {idx + 1}</span>
+                        <span className="text-slate-500 font-medium">{t('questionOf')} {idx + 1}</span>
                         <Badge className={`text-[10px] py-0 px-2 rounded-lg font-bold scale-90 ${
                           isCorrect 
                             ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' 
                             : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
                         }`}>
-                          {isCorrect ? t.correct : t.incorrect}
+                          {isCorrect ? t('correct') : t('incorrect')}
                         </Badge>
                       </div>
                     </div>
@@ -218,13 +218,13 @@ export default function Results({
                           ? 'bg-emerald-950/20 border-emerald-500/15 text-emerald-300' 
                           : 'bg-rose-950/20 border-rose-500/15 text-rose-300'
                       }`}>
-                        <p className="font-bold text-[10px] text-slate-500 uppercase tracking-wide mb-1">{t.yourAns}</p>
+                        <p className="font-bold text-[10px] text-slate-500 uppercase tracking-wide mb-1">{t('yourAns')}</p>
                         <p className="font-medium leading-relaxed">{userAns || "---"}</p>
                       </div>
                       
                       {!isCorrect && (
                         <div className="p-3 bg-emerald-950/20 border border-emerald-500/15 text-emerald-300 rounded-xl">
-                          <p className="font-bold text-[10px] text-slate-500 uppercase tracking-wide mb-1">{t.correctAns}</p>
+                          <p className="font-bold text-[10px] text-slate-500 uppercase tracking-wide mb-1">{t('correctAns')}</p>
                           <p className="font-medium leading-relaxed">{q.answer}</p>
                         </div>
                       )}
@@ -233,7 +233,7 @@ export default function Results({
                     {/* Explanations block */}
                     {q.explanation && (
                       <div className="p-3 bg-slate-950/60 border border-slate-850 rounded-xl space-y-1 leading-relaxed">
-                        <p className="font-bold text-[10px] text-indigo-400 uppercase tracking-wide">{t.explanation}</p>
+                        <p className="font-bold text-[10px] text-indigo-400 uppercase tracking-wide">{t('explanation')}</p>
                         <p className="text-slate-300">{q.explanation}</p>
                       </div>
                     )}

@@ -1,4 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+import type { TFunction } from 'i18next';
 import {
   BrainCircuit,
   LayoutDashboard,
@@ -12,7 +14,6 @@ import {
   LogIn,
   UserPlus,
   LogOut,
-  Sparkles,
 } from 'lucide-react';
 import { hc } from 'hono/client';
 import type { AppType } from '@aeroquiz/api';
@@ -36,7 +37,7 @@ import JSONEditor from './components/JSONEditor.tsx';
 import QuizPlayer from './components/QuizPlayer.tsx';
 import Results from './components/Results.tsx';
 import LoginForm from './components/auth/LoginForm.tsx';
-import AICreatorPage from './components/AICreatorPage.tsx';
+
 import SignupForm from './components/auth/SignupForm.tsx';
 
 // ==========================================
@@ -108,186 +109,6 @@ export function useAppData() {
 }
 
 // ==========================================
-// LOCALIZATION
-// ==========================================
-export const translations = {
-  vi: {
-    success: "Thành công",
-    dashboard: "Trang chủ",
-    createQuiz: "Tạo đề thi",
-    aiCreate: "AI Tạo đề",
-    login: "Đăng nhập",
-    signup: "Đăng ký",
-    logout: "Đăng xuất",
-    goodMorning: "Chào buổi sáng, Sĩ tử!",
-    goodAfternoon: "Chào buổi chiều, Sĩ tử!",
-    goodEvening: "Chào buổi tối, Sĩ tử!",
-    loginRequired: "Vui lòng đăng nhập để sử dụng tính năng này.",
-    customGenerator: "Bộ tạo đề thi tự động",
-    customDesc: "Dán cấu trúc JSON, tải lên file .json hoặc hình ảnh chụp đề thi để quét và tạo bài làm trắc nghiệm ngay lập tức.",
-    pasteJsonBtn: "Dán JSON / Quét đề",
-    aiCreateBtn: "Tạo bằng AI",
-    tryDemoBtn: "Thử đề mẫu",
-    playedCount: "Lượt làm bài",
-    avgScore: "Điểm trung bình",
-    savedCount: "Đề thi đã lưu",
-    builtinQuizzes: "Kho đề thi có sẵn",
-    customQuizzes: "Đề thi tự tạo",
-    playBtn: "Làm bài",
-    deleteBtn: "Xóa",
-    noCustomQuizzes: "Bạn chưa có đề thi tự tạo nào. Nhấp vào 'Tạo đề thi' ở thanh điều hướng để bắt đầu!",
-    historyTitle: "Lịch sử nộp bài",
-    noHistory: "Chưa có kết quả làm bài nào. Hãy thử sức ngay với các đề thi có sẵn hoặc tự tạo!",
-    clearHistoryBtn: "Xóa lịch sử",
-    date: "Thời gian làm",
-    score: "Điểm số",
-    timeTaken: "Thời gian làm bài",
-    results: "Kết quả",
-    correct: "Đúng",
-    incorrect: "Sai",
-    totalTime: "Tổng thời gian",
-    retake: "Làm lại",
-    home: "Trang chủ",
-    exitConfirmTitle: "Bạn có muốn thoát?",
-    exitConfirmDesc: "Tiến trình làm bài hiện tại sẽ bị hủy và không lưu vào lịch sử.",
-    exitBtn: "Thoát bài thi",
-    cancelBtn: "Hủy bỏ",
-    helpTitle: "Hướng dẫn sử dụng AeroQuiz",
-    helpDesc: "AeroQuiz hỗ trợ làm bài trắc nghiệm thông minh và quét/tạo đề thi cực kỳ nhanh chóng:",
-    helpStep1: "1. Tải lên mã JSON chứa danh sách câu hỏi trắc nghiệm của riêng bạn.",
-    helpStep2: "2. Hoặc kéo thả hình ảnh/ảnh chụp đề thi lên để hệ thống phân tích OCR tự động thành đề thi.",
-    helpStep3: "3. Thống kê điểm số và lịch sử làm bài được lưu trữ và hiển thị trực tiếp trên dashboard.",
-    helpClose: "Đóng",
-    editorTitle: "Cấu trúc đề thi (JSON)",
-    scanZone: "Kéo thả ảnh đề thi vào đây hoặc bấm để chọn file",
-    scanSupport: "Hỗ trợ file ảnh JPG, JPEG, PNG. Quét OCR thông minh bằng AI",
-    loadTemplate: "Tải mẫu",
-    formatJson: "Định dạng",
-    parsePlay: "Bắt đầu làm bài",
-    jsonValid: "Cấu trúc JSON hợp lệ",
-    jsonInvalid: "Mã JSON không hợp lệ. Vui lòng kiểm tra lại dấu đóng mở ngoặc hoặc phẩy.",
-    scanning: "Đang tải ảnh và xử lý quét OCR...",
-    scanSuccess: "Đã quét ảnh và trích xuất đề thi thành công!",
-    scanError: "Tải ảnh hoặc quét thất bại. Vui lòng kiểm tra file ảnh hoặc thử lại.",
-    creatorDesc: "Tự tạo đề thi bằng cách chỉnh sửa trực tiếp JSON hoặc tải hình ảnh lên quét.",
-    backBtn: "Quay lại",
-    schemaHelp: "Cấu trúc JSON phải chứa các trường: 'title', 'description', và 'questions' (danh sách chứa 'question', 'options', 'answer', 'explanation').",
-    questionOf: "Câu hỏi",
-    ofWord: "trên",
-    flagged: "Đã đánh dấu",
-    unflagged: "Đánh dấu câu",
-    finishBtn: "Nộp bài",
-    prev: "Câu trước",
-    next: "Câu sau",
-    unansweredWarning: "Bạn chưa hoàn thành hết tất cả câu hỏi!",
-    timerWarning: "Bạn đã làm bài được một khoảng thời gian khá lâu!",
-    confirmSubmit: "Nộp bài thi",
-    confirmSubmitDesc: "Bạn có chắc muốn kết thúc bài làm trắc nghiệm này?",
-    scoreTitle: "Kết quả làm bài",
-    perfectTitle: "Điểm tuyệt đối! 🌟",
-    perfectDesc: "Thật không thể tin nổi! Bạn đã hoàn thành xuất sắc tất cả câu hỏi trắc nghiệm.",
-    brilliantTitle: "Kết quả tuyệt vời! 🎉",
-    brilliantDesc: "Rất tốt! Bạn nắm vững hầu như toàn bộ kiến thức của đề thi này.",
-    passedTitle: "Đạt yêu cầu! 👍",
-    passedDesc: "Chúc mừng bạn đã vượt qua, tuy nhiên vẫn còn một số câu hỏi cần cải thiện.",
-    failedTitle: "Cần cố gắng thêm! 💪",
-    failedDesc: "Chưa đạt yêu cầu. Bạn hãy đọc kỹ phần giải thích chi tiết đáp án bên dưới.",
-    detailsTitle: "Giải thích đáp án chi tiết",
-    yourAns: "Lựa chọn của bạn",
-    correctAns: "Đáp án đúng",
-    explanation: "Giải thích chi tiết",
-    actions: "Hành động",
-  },
-  en: {
-    success: "Success",
-    dashboard: "Dashboard",
-    createQuiz: "Create Quiz",
-    aiCreate: "AI Create",
-    login: "Sign In",
-    signup: "Sign Up",
-    logout: "Sign Out",
-    goodMorning: "Good Morning, Quizzer!",
-    goodAfternoon: "Good Afternoon, Quizzer!",
-    goodEvening: "Good Evening, Quizzer!",
-    loginRequired: "Please sign in to use this feature.",
-    customGenerator: "Custom Quiz Generator",
-    customDesc: "Paste a raw JSON template, import a .json file, or upload a quiz screenshot to scan and generate a playable test instantly.",
-    pasteJsonBtn: "Paste JSON / Scan Quiz",
-    aiCreateBtn: "Create with AI",
-    tryDemoBtn: "Try Built-in Demo",
-    playedCount: "Attempts",
-    avgScore: "Average Score",
-    savedCount: "Saved Quizzes",
-    builtinQuizzes: "Built-in Quizzes",
-    customQuizzes: "Your Custom Quizzes",
-    playBtn: "Play",
-    deleteBtn: "Delete",
-    noCustomQuizzes: "No custom quizzes yet. Click 'Create Quiz' to generate one!",
-    historyTitle: "Score History",
-    noHistory: "No attempts recorded yet. Take a quiz to view statistics!",
-    clearHistoryBtn: "Clear History",
-    date: "Completed At",
-    score: "Score",
-    timeTaken: "Duration",
-    results: "Results",
-    correct: "Correct",
-    incorrect: "Incorrect",
-    totalTime: "Total Time",
-    retake: "Retake",
-    home: "Home",
-    exitConfirmTitle: "Are you sure you want to exit?",
-    exitConfirmDesc: "Your current progress will be lost and not saved to history.",
-    exitBtn: "Exit Quiz",
-    cancelBtn: "Cancel",
-    helpTitle: "AeroQuiz User Guide",
-    helpDesc: "AeroQuiz is an interactive player and instant custom quiz creator:",
-    helpStep1: "1. Paste a valid formatted JSON structure containing quizzes.",
-    helpStep2: "2. Or drag and drop any screenshot of a quiz, and the AI OCR scanner will parse it.",
-    helpStep3: "3. Results and historical performance are automatically stored and rendered.",
-    helpClose: "Close",
-    editorTitle: "Quiz Structure (JSON)",
-    scanZone: "Drag & drop quiz image here, or click to upload",
-    scanSupport: "Supports JPG, JPEG, PNG. Smart AI OCR scan simulation",
-    loadTemplate: "Load Template",
-    formatJson: "Format",
-    parsePlay: "Parse & Play",
-    jsonValid: "JSON structure is valid",
-    jsonInvalid: "Invalid JSON format. Check closing brackets, quotes or commas.",
-    scanning: "Uploading and processing OCR scan...",
-    scanSuccess: "Quiz image scanned and converted successfully!",
-    scanError: "Scan failed. Please verify the image file format and try again.",
-    creatorDesc: "Create custom quizzes by editing JSON directly or scanning images.",
-    backBtn: "Back",
-    schemaHelp: "JSON must contain 'title', 'description', and 'questions' array (each with 'question', 'options', 'answer', 'explanation').",
-    questionOf: "Question",
-    ofWord: "of",
-    flagged: "Flagged",
-    unflagged: "Flag question",
-    finishBtn: "Finish",
-    prev: "Previous",
-    next: "Next",
-    unansweredWarning: "You still have unanswered questions!",
-    timerWarning: "The timer has been running for a long time!",
-    confirmSubmit: "Submit Quiz",
-    confirmSubmitDesc: "Are you sure you want to submit your answers now?",
-    scoreTitle: "Test Performance",
-    perfectTitle: "Perfect Score! 🌟",
-    perfectDesc: "Amazing! You achieved a perfect score on this test.",
-    brilliantTitle: "Brilliant Work! 🎉",
-    brilliantDesc: "Excellent job! You answered almost all questions correctly.",
-    passedTitle: "Passed! 👍",
-    passedDesc: "You passed! But there are still areas you can review.",
-    failedTitle: "Keep Practicing! 💪",
-    failedDesc: "Failed. Take a look at the detailed answer explanations below.",
-    detailsTitle: "Detailed Explanations",
-    yourAns: "Your answer",
-    correctAns: "Correct answer",
-    explanation: "Explanation",
-    actions: "Actions",
-  }
-};
-
-// ==========================================
 // TANSTACK ROUTER CONTEXT
 // ==========================================
 interface RouterContext {
@@ -308,9 +129,9 @@ interface RouterContext {
     elapsedSeconds: number
   ) => void;
   addToast: (title: string, message: string, type: 'success' | 'error' | 'warning' | 'info') => void;
-  t: any;
+  t: TFunction;
   lang: 'vi' | 'en';
-  setLang: React.Dispatch<React.SetStateAction<'vi' | 'en'>>;
+  setLang: (l: 'vi' | 'en') => void;
   lastResult: QuizResult | null;
   toasts: Toast[];
   setToasts: React.Dispatch<React.SetStateAction<Toast[]>>;
@@ -347,33 +168,20 @@ const signupRoute = createRoute({
 const creatorRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/creator',
+  validateSearch: (search: Record<string, unknown>) => ({
+    mode: ((search.mode as string) === 'ai' || (search.mode as string) === 'ocr' ? search.mode : 'json') as string,
+  }),
   beforeLoad: ({ context }) => {
     if (!context.isAuthLoading && !context.user) {
       context.addToast(
-        context.t.login,
-        context.t.loginRequired,
+        context.t('login'),
+        context.t('loginRequired'),
         'warning'
       );
       throw redirect({ to: '/login' });
     }
   },
   component: CreatorComponent,
-});
-
-const aiCreatorRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/ai',
-  beforeLoad: ({ context }) => {
-    if (!context.isAuthLoading && !context.user) {
-      context.addToast(
-        context.t.login,
-        context.t.loginRequired,
-        'warning'
-      );
-      throw redirect({ to: '/login' });
-    }
-  },
-  component: AICreatorComponent,
 });
 
 const playerRoute = createRoute({
@@ -393,7 +201,6 @@ const routeTree = rootRoute.addChildren([
   loginRoute,
   signupRoute,
   creatorRoute,
-  aiCreatorRoute,
   playerRoute,
   resultsRoute,
 ]);
@@ -421,7 +228,7 @@ function RootComponent() {
   const routerState = useRouterState();
   const { user, isAuthLoading } = useAppData();
   const isPlaying = routerState.location.pathname.startsWith('/player');
-  const isAuthPage = ['/login', '/signup', '/ai'].includes(routerState.location.pathname);
+  const isAuthPage = ['/login', '/signup'].includes(routerState.location.pathname);
 
   const [userMenuOpen, setUserMenuOpen] = useState(false);
 
@@ -451,26 +258,19 @@ function RootComponent() {
                   activeProps={{ className: 'bg-slate-800 text-slate-100 hover:bg-slate-800' }}
                 >
                   <LayoutDashboard className="h-4 w-4 mr-1.5" />
-                  <span className="hidden sm:inline">{context.t.dashboard}</span>
+                  <span className="hidden sm:inline">{context.t('dashboard')}</span>
                 </Link>
 
                 {user && (
                   <>
                     <Link
                       to="/creator"
+                      search={{ mode: 'json' }}
                       className="rounded-xl flex items-center text-xs sm:text-sm h-8 px-3.5 text-slate-400 hover:text-slate-100 hover:bg-slate-800/40 transition duration-200"
                       activeProps={{ className: 'bg-slate-800 text-slate-100 hover:bg-slate-800' }}
                     >
                       <PlusCircle className="h-4 w-4 mr-1.5" />
-                      <span className="hidden sm:inline">{context.t.createQuiz}</span>
-                    </Link>
-                    <Link
-                      to="/ai"
-                      className="rounded-xl flex items-center text-xs sm:text-sm h-8 px-3.5 text-slate-400 hover:text-slate-100 hover:bg-slate-800/40 transition duration-200"
-                      activeProps={{ className: 'bg-slate-800 text-slate-100 hover:bg-slate-800' }}
-                    >
-                      <Sparkles className="h-4 w-4 mr-1.5" />
-                      <span className="hidden sm:inline">{context.t.aiCreate}</span>
+                      <span className="hidden sm:inline">{context.t('createQuiz')}</span>
                     </Link>
                   </>
                 )}
@@ -483,7 +283,7 @@ function RootComponent() {
               variant="ghost"
               size="icon"
               className="relative rounded-xl h-9 w-9 text-slate-400 hover:text-slate-100 hover:bg-slate-800/50"
-              onClick={() => context.setLang(prev => prev === 'vi' ? 'en' : 'vi')}
+              onClick={() => context.setLang(context.lang === 'vi' ? 'en' : 'vi')}
               title="Switch Language"
             >
               <Languages className="h-4 w-4" />
@@ -540,7 +340,7 @@ function RootComponent() {
                             className="w-full flex items-center space-x-2 px-3 py-2 rounded-xl text-sm text-slate-400 hover:text-rose-400 hover:bg-slate-800/50 transition duration-200"
                           >
                             <LogOut className="h-4 w-4" />
-                            <span>{context.t.logout}</span>
+                            <span>{context.t('logout')}</span>
                           </button>
                         </div>
                       </>
@@ -553,14 +353,14 @@ function RootComponent() {
                       className="rounded-xl flex items-center text-xs sm:text-sm h-8 px-3 text-slate-400 hover:text-slate-100 hover:bg-slate-800/40 transition duration-200"
                     >
                       <LogIn className="h-4 w-4 mr-1.5" />
-                      <span className="hidden sm:inline">{context.t.login}</span>
+                      <span className="hidden sm:inline">{context.t('login')}</span>
                     </Link>
                     <Link
                       to="/signup"
                       className="rounded-xl flex items-center text-xs sm:text-sm h-8 px-3 bg-indigo-600 hover:bg-indigo-500 text-white transition duration-200"
                     >
                       <UserPlus className="h-4 w-4 mr-1.5" />
-                      <span className="hidden sm:inline">{context.t.signup}</span>
+                      <span className="hidden sm:inline">{context.t('signup')}</span>
                     </Link>
                   </div>
                 )}
@@ -601,7 +401,7 @@ function RootComponent() {
                 <p className="text-xs opacity-90 leading-normal">{toast.message}</p>
               </div>
               <button
-                onClick={() => context.setToasts(prev => prev.filter(t => t.id !== toast.id))}
+                onClick={() => context.setToasts(prev => prev.filter(to => to.id !== toast.id))}
                 className="text-slate-400 hover:text-slate-200 transition"
               >
                 <X className="h-4 w-4" />
@@ -618,7 +418,7 @@ function RootComponent() {
             <div className="flex justify-between items-center border-b border-slate-800 pb-4">
               <h3 className="text-lg font-bold text-slate-100 flex items-center space-x-2">
                 <BrainCircuit className="h-5 w-5 text-indigo-400" />
-                <span>{context.t.helpTitle}</span>
+                <span>{context.t('helpTitle')}</span>
               </h3>
               <Button
                 variant="ghost"
@@ -630,11 +430,11 @@ function RootComponent() {
               </Button>
             </div>
             <div className="space-y-4 py-4 text-sm leading-relaxed text-slate-300">
-              <p>{context.t.helpDesc}</p>
+              <p>{context.t('helpDesc')}</p>
               <div className="p-3 bg-slate-950/50 border border-slate-800 rounded-2xl space-y-2">
-                <p className="text-slate-200">{context.t.helpStep1}</p>
-                <p className="text-slate-200">{context.t.helpStep2}</p>
-                <p className="text-slate-200">{context.t.helpStep3}</p>
+                <p className="text-slate-200">{context.t('helpStep1')}</p>
+                <p className="text-slate-200">{context.t('helpStep2')}</p>
+                <p className="text-slate-200">{context.t('helpStep3')}</p>
               </div>
               <p className="text-xs text-indigo-400/80 font-medium">
                 AeroQuiz v1.0 · React + TanStack Router + Hono RPC + Tailwind v4
@@ -645,7 +445,7 @@ function RootComponent() {
                 className="rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white"
                 onClick={() => context.setShowHelpModal(false)}
               >
-                {context.t.helpClose}
+                {context.t('helpClose')}
               </Button>
             </div>
           </div>
@@ -683,22 +483,16 @@ function SignupComponent() {
 function CreatorComponent() {
   const context = creatorRoute.useRouteContext();
   const routeRouter = useRouter();
+  const { mode } = creatorRoute.useSearch();
+  const currentMode: 'json' | 'ai' | 'ocr' = (mode === 'ai' || mode === 'ocr' ? mode : 'json') as 'json' | 'ai' | 'ocr';
   return (
     <JSONEditor
+      mode={currentMode}
+      onModeChange={(m) => routeRouter.navigate({ to: '/creator', search: { mode: m } })}
       onQuizCreated={context.onQuizCreated}
       onCancel={() => routeRouter.navigate({ to: '/' })}
       addToast={context.addToast}
       t={context.t}
-      lang={context.lang}
-    />
-  );
-}
-
-function AICreatorComponent() {
-  const context = aiCreatorRoute.useRouteContext();
-  return (
-    <AICreatorPage
-      addToast={context.addToast}
       lang={context.lang}
     />
   );
@@ -803,16 +597,17 @@ function AppContent() {
   const [quizzes, setQuizzes] = useState<{ builtin: Quiz[]; custom: Quiz[] }>({ builtin: [], custom: [] });
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [toasts, setToasts] = useState<Toast[]>([]);
-  const [lang, setLang] = useState<'vi' | 'en'>('vi');
   const [showHelpModal, setShowHelpModal] = useState(false);
   const [lastResult, setLastResult] = useState<QuizResult | null>(null);
 
-  const t = translations[lang];
+  const { t, i18n } = useTranslation();
+  const lang = (i18n.language?.startsWith('en') ? 'en' : 'vi') as 'vi' | 'en';
+  const setLang = (l: 'vi' | 'en') => { i18n.changeLanguage(l); };
 
   const addToast = (title: string, message: string, type: 'success' | 'error' | 'warning' | 'info' = 'info') => {
     const id = Date.now().toString();
     setToasts(prev => [...prev, { id, title, message, type }]);
-    setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 4500);
+    setTimeout(() => setToasts(prev => prev.filter(to => to.id !== id)), 4500);
   };
 
   const fetchData = async () => {
@@ -878,7 +673,7 @@ function AppContent() {
         { headers: { Authorization: `Bearer ${auth.token}` } },
       );
       if (res.ok) {
-        addToast(t.success, lang === 'vi' ? "Đã xóa đề thi!" : "Quiz deleted!", "success");
+        addToast(t('success'), lang === 'vi' ? "Đã xóa đề thi!" : "Quiz deleted!", "success");
         fetchData();
       } else {
         addToast("Error", "Could not delete this quiz.", "error");
@@ -896,7 +691,7 @@ function AppContent() {
       );
       if (res.ok) {
         setHistory([]);
-        addToast(t.success, lang === 'vi' ? "Đã xóa toàn bộ lịch sử!" : "History cleared!", "success");
+        addToast(t('success'), lang === 'vi' ? "Đã xóa toàn bộ lịch sử!" : "History cleared!", "success");
       }
     } catch {
       addToast("Error", "Failed to clear history.", "error");
@@ -928,7 +723,7 @@ function AppContent() {
           onStartQuiz: handleStartQuiz,
           onDeleteQuiz: handleDeleteQuiz,
           onClearHistory: handleClearHistory,
-          onNavigateToCreate: () => router.navigate({ to: '/creator' }),
+          onNavigateToCreate: () => router.navigate({ to: '/creator', search: { mode: 'json' } }),
           onQuizCreated: (nq) => {
             addToast(lang === 'vi' ? "Đã lưu đề thi!" : "Quiz saved!", nq.title, "success");
             fetchData();

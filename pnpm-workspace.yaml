@@ -2,6 +2,7 @@ packages:
   - 'apps/*'
 allowBuilds:
   esbuild: true
+  tesseract.js: true
 onlyBuiltDependencies:
   - esbuild
   - esbuild@0.25.12
