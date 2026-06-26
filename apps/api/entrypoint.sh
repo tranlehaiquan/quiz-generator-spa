@@ -1,30 +1,10 @@
 #!/bin/sh
 set -e
 
-# Extract host and port from DATABASE_URL
-DB_HOST=$(echo "$DATABASE_URL" | sed -n 's|.*@\([^:]*\):.*|\1|p')
-DB_PORT=$(echo "$DATABASE_URL" | sed -n 's|.*:\([0-9]*\)/.*|\1|p')
-DB_HOST=${DB_HOST:-postgres}
-DB_PORT=${DB_PORT:-5432}
-
-echo "Waiting for PostgreSQL at $DB_HOST:$DB_PORT..."
-
-# TCP-level health check — no DB driver needed
-until node -e "
-  const net = require('net');
-  const sock = net.createConnection({ host: '$DB_HOST', port: $DB_PORT, timeout: 3000 });
-  sock.on('connect', () => { sock.end(); process.exit(0); });
-  sock.on('error', () => process.exit(1));
-  sock.on('timeout', () => { sock.destroy(); process.exit(1); });
-" 2>/dev/null; do
-  echo "  Postgres not ready — retrying in 2s..."
-  sleep 2
-done
-
-echo "PostgreSQL is reachable. Running migrations..."
+echo "Running database migration..."
 node -e "
   const { Pool } = require('pg');
-  const pool = new Pool({ connectionString: process.env.DATABASE_URL, connectionTimeoutMillis: 5000 });
+  const pool = new Pool({ connectionString: process.env.DATABASE_URL, connectionTimeoutMillis: 10000 });
   pool.query(\`
     CREATE TABLE IF NOT EXISTS users (
       id TEXT PRIMARY KEY,
@@ -56,7 +36,7 @@ node -e "
       time_taken TEXT NOT NULL DEFAULT '0s',
       timestamp BIGINT NOT NULL
     );
-  \`).then(() => { console.log('Migration complete.'); pool.end(); process.exit(0); }).catch(e => { console.error(e); pool.end(); process.exit(1); });
+  \`).then(() => { console.log('Migration OK.'); pool.end(); process.exit(0); }).catch(e => { console.error('Migration failed:', e.message); pool.end(); process.exit(1); });
 "
 
 echo "Starting API server..."

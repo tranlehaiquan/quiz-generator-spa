@@ -1,7 +1,6 @@
 services:
   postgres:
     image: postgres:17-alpine
-    container_name: quiz-pg
     environment:
       POSTGRES_USER: quiz
       POSTGRES_PASSWORD: quizsecret
@@ -13,12 +12,13 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    networks:
+      - app-network
 
   api:
     build:
       context: .
       dockerfile: apps/api/Dockerfile
-    container_name: quiz-api
     environment:
       DATABASE_URL: postgresql://quiz:quizsecret@postgres:5432/quizdb
       JWT_SECRET: ${JWT_SECRET:-change-me-in-production}
@@ -28,14 +28,25 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - app-network
 
   web:
     build:
       context: .
       dockerfile: apps/web/Dockerfile
-    container_name: quiz-web
+    ports:
+      - "8080:80"
     depends_on:
       - api
+    restart: unless-stopped
+    networks:
+      - app-network
 
 volumes:
   pgdata:
+
+networks:
+  app-network:
+    driver: bridge
