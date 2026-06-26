@@ -37,7 +37,7 @@ export type AppType = typeof routes;
 
 async function start() {
   try {
-    await runMigrations(process.env.DATABASE_URL!);
+    await runMigrations(process.env.DATABASE_URL || 'postgresql://quiz:quizsecret@localhost:5432/quizdb');
   } catch (err: any) {
     console.error('Migration failed:', err.message);
     console.error('Starting without DB — health will report degraded.');
