@@ -34,6 +34,8 @@ services:
       context: .
       dockerfile: apps/web/Dockerfile
     container_name: quiz-web
+    ports:
+      - "8080:80"
     depends_on:
       - api
 
