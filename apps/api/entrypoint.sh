@@ -1,20 +1,30 @@
 #!/bin/sh
 set -e
 
-echo "Waiting for PostgreSQL to be ready..."
+# Extract host and port from DATABASE_URL
+DB_HOST=$(echo "$DATABASE_URL" | sed -n 's|.*@\([^:]*\):.*|\1|p')
+DB_PORT=$(echo "$DATABASE_URL" | sed -n 's|.*:\([0-9]*\)/.*|\1|p')
+DB_HOST=${DB_HOST:-postgres}
+DB_PORT=${DB_PORT:-5432}
+
+echo "Waiting for PostgreSQL at $DB_HOST:$DB_PORT..."
+
+# TCP-level health check — no DB driver needed
 until node -e "
-  const { Pool } = require('pg');
-  const p = new Pool({ connectionString: process.env.DATABASE_URL, connectionTimeoutMillis: 3000 });
-  p.query('SELECT 1').then(() => { p.end(); process.exit(0); }).catch(() => { p.end(); process.exit(1); });
+  const net = require('net');
+  const sock = net.createConnection({ host: '$DB_HOST', port: $DB_PORT, timeout: 3000 });
+  sock.on('connect', () => { sock.end(); process.exit(0); });
+  sock.on('error', () => process.exit(1));
+  sock.on('timeout', () => { sock.destroy(); process.exit(1); });
 " 2>/dev/null; do
   echo "  Postgres not ready — retrying in 2s..."
   sleep 2
 done
 
-echo "PostgreSQL is ready. Running migrations..."
+echo "PostgreSQL is reachable. Running migrations..."
 node -e "
   const { Pool } = require('pg');
-  const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+  const pool = new Pool({ connectionString: process.env.DATABASE_URL, connectionTimeoutMillis: 5000 });
   pool.query(\`
     CREATE TABLE IF NOT EXISTS users (
       id TEXT PRIMARY KEY,
