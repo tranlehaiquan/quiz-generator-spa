@@ -20,7 +20,7 @@ services:
       context: .
       dockerfile: apps/api/Dockerfile
     environment:
-      DATABASE_URL: postgresql://quiz:quizsecret@postgres:5432/quizdb
+      DATABASE_URL: postgres://quiz:quizsecret@postgres:5432/quizdb
       JWT_SECRET: ${JWT_SECRET:-change-me-in-production}
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}

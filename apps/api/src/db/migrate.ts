@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import { Pool } from 'pg';
 
-const pool = new Pool({ connectionString: process.env.DATABASE_URL || 'postgresql://quiz:quizsecret@localhost:5432/quizdb' });
+const pool = new Pool({ connectionString: process.env.DATABASE_URL || 'postgres://quiz:quizsecret@localhost:5432/quizdb' });
 
 const migration = `
 CREATE TABLE IF NOT EXISTS "users" (

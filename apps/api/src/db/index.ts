@@ -2,7 +2,7 @@ import { drizzle } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
 import * as schema from './schema.js';
 
-const DATABASE_URL = process.env.DATABASE_URL || 'postgresql://quiz:quizsecret@localhost:5432/quizdb';
+const DATABASE_URL = process.env.DATABASE_URL || 'postgres://quiz:quizsecret@localhost:5432/quizdb';
 
 const pool = new Pool({
   connectionString: DATABASE_URL,
