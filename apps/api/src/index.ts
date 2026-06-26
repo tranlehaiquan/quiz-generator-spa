@@ -10,41 +10,41 @@ import historyRoutes from './routes/history.js';
 import aiRoutes from './routes/ai.js';
 import scanRoutes from './routes/scan.js';
 
+const app = new Hono();
+
+app.use('*', cors({
+  origin: '*',
+  allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowHeaders: ['Content-Type', 'Authorization'],
+}));
+
+const routes = app
+  .get('/api/health', async (c) => {
+    try {
+      await db.select().from(schema.users).limit(1);
+      return c.json({ status: 'ok', db: 'connected' });
+    } catch {
+      return c.json({ status: 'degraded', db: 'disconnected' }, 503);
+    }
+  })
+  .route('/api/auth', authRoutes)
+  .route('/api/quizzes', quizRoutes)
+  .route('/api/history', historyRoutes)
+  .route('/api/ai', aiRoutes)
+  .route('/api', scanRoutes);
+
+export type AppType = typeof routes;
+
 async function start() {
-  // Run migrations with retry
   try {
     await runMigrations(process.env.DATABASE_URL!);
   } catch (err: any) {
-    console.error('Failed to run migrations after retries:', err.message);
-    console.error('Starting server without DB — health check will report degraded.');
+    console.error('Migration failed:', err.message);
+    console.error('Starting without DB — health will report degraded.');
   }
-
-  const app = new Hono();
-
-  app.use('*', cors({
-    origin: '*',
-    allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowHeaders: ['Content-Type', 'Authorization'],
-  }));
-
-  const routes = app
-    .get('/api/health', async (c) => {
-      try {
-        await db.select().from(schema.users).limit(1);
-        return c.json({ status: 'ok', db: 'connected' });
-      } catch {
-        return c.json({ status: 'degraded', db: 'disconnected' }, 503);
-      }
-    })
-    .route('/api/auth', authRoutes)
-    .route('/api/quizzes', quizRoutes)
-    .route('/api/history', historyRoutes)
-    .route('/api/ai', aiRoutes)
-    .route('/api', scanRoutes);
 
   const port = 3000;
   console.log(`Hono API Server running on port ${port}...`);
-
   serve({ fetch: app.fetch, port });
 }
 
