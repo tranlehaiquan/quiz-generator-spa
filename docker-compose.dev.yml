@@ -2,54 +2,28 @@
 # Run: docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
 services:
   postgres:
-    image: postgres:17-alpine
-    container_name: quiz-pg-dev
-    environment:
-      POSTGRES_USER: quiz
-      POSTGRES_PASSWORD: quizsecret
-      POSTGRES_DB: quizdb
     ports:
       - "5432:5432"
-    volumes:
-      - pgdata-dev:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U quiz -d quizdb"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
 
   api:
     build:
-      context: .
       dockerfile: apps/api/Dockerfile.dev
-    container_name: quiz-api-dev
     ports:
       - "3000:3000"
     environment:
-      DATABASE_URL: postgresql://quiz:quizsecret@postgres:5432/quizdb
       JWT_SECRET: dev-secret-change-me
-      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
-      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
-      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
     volumes:
       - ./apps/api/src:/app/apps/api/src
       - ./apps/api/.env:/app/apps/api/.env
-    depends_on:
-      postgres:
-        condition: service_healthy
 
   web:
     build:
-      context: .
       dockerfile: apps/web/Dockerfile.dev
-    container_name: quiz-web-dev
     ports:
       - "5173:5173"
     volumes:
       - ./apps/web/src:/app/apps/web/src
       - ./apps/api/src:/app/apps/api/src
-    depends_on:
-      - api
 
 volumes:
   pgdata-dev:
