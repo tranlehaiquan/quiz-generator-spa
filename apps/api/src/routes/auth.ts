@@ -20,7 +20,49 @@ const loginSchema = z.object({
 });
 
 const auth = new Hono()
+  .get('/setup-status', async (c) => {
+    const [row] = await db.select({ count: schema.users.id }).from(schema.users).limit(1);
+    return c.json({ needsSetup: !row });
+  })
+  .post('/setup', async (c) => {
+    // Only allow setup if no users exist
+    const [row] = await db.select({ count: schema.users.id }).from(schema.users).limit(1);
+    if (row) {
+      return c.json({ error: 'Setup already completed.' }, 403);
+    }
+
+    try {
+      const body = await c.req.json();
+      const parsed = signupSchema.safeParse(body);
+      if (!parsed.success) {
+        return c.json({ error: 'Validation failed', details: parsed.error.flatten() }, 400);
+      }
+
+      const { email, password, name } = parsed.data;
+      const passwordHash = await bcrypt.hash(password, 12);
+
+      const [user] = await db.insert(schema.users)
+        .values({ email, passwordHash, name })
+        .returning({ id: schema.users.id, email: schema.users.email, name: schema.users.name });
+
+      const token = jwt.sign({ userId: user.id, email: user.email }, getSecret(), { expiresIn: '7d' });
+
+      return c.json({ user: { id: user.id, email: user.email, name: user.name }, token }, 201);
+    } catch (err: any) {
+      console.error('Setup error:', err);
+      return c.json({ error: 'Internal server error' }, 500);
+    }
+  })
+  .get('/config', (c) => {
+    return c.json({
+      allowSignup: process.env.ALLOW_SIGNUP !== 'false',
+    });
+  })
   .post('/signup', async (c) => {
+    if (process.env.ALLOW_SIGNUP === 'false') {
+      return c.json({ error: 'Signup is currently disabled.' }, 403);
+    }
+
     try {
       const body = await c.req.json();
       const parsed = signupSchema.safeParse(body);

@@ -19,7 +19,7 @@ RUN pnpm --filter @aeroquiz/api build
 
 # ---- Prune for Production ----
 FROM builder AS pruner
-RUN pnpm --filter @aeroquiz/api deploy --prod /deploy
+RUN pnpm --filter @aeroquiz/api deploy --prod --legacy /deploy
 
 # ---- Runtime Stage ----
 FROM node:22-alpine
@@ -27,8 +27,10 @@ FROM node:22-alpine
 WORKDIR /app
 
 COPY --from=pruner /deploy /app
+COPY apps/api/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
 ENV NODE_ENV=production
 EXPOSE 3000
 
-CMD ["node", "dist/index.js"]
+ENTRYPOINT ["/entrypoint.sh"]

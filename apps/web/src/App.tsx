@@ -37,6 +37,7 @@ import JSONEditor from './components/JSONEditor.tsx';
 import QuizPlayer from './components/QuizPlayer.tsx';
 import Results from './components/Results.tsx';
 import LoginForm from './components/auth/LoginForm.tsx';
+import SetupPage from './components/auth/SetupPage.tsx';
 
 import SignupForm from './components/auth/SignupForm.tsx';
 
@@ -92,6 +93,8 @@ interface AppData {
   user: User | null;
   token: string | null;
   isAuthLoading: boolean;
+  allowSignup: boolean;
+  needsSetup: boolean;
   stats: { playedCount: number; avgScore: number; savedCount: number };
 }
 
@@ -101,6 +104,8 @@ const AppDataContext = createContext<AppData>({
   user: null,
   token: null,
   isAuthLoading: true,
+  allowSignup: true,
+  needsSetup: false,
   stats: { playedCount: 0, avgScore: 0, savedCount: 0 },
 });
 
@@ -141,9 +146,16 @@ interface RouterContext {
   token: string | null;
   logout: () => void;
   isAuthLoading: boolean;
+  allowSignup: boolean;
+  needsSetup: boolean;
 }
 
 const rootRoute = createRootRouteWithContext<RouterContext>()({
+  beforeLoad: ({ context, location }) => {
+    if (context.needsSetup && location.pathname !== '/setup') {
+      throw redirect({ to: '/setup' });
+    }
+  },
   component: RootComponent,
 });
 
@@ -162,7 +174,18 @@ const loginRoute = createRoute({
 const signupRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/signup',
+  beforeLoad: ({ context }) => {
+    if (!context.allowSignup) {
+      throw redirect({ to: '/login' });
+    }
+  },
   component: SignupComponent,
+});
+
+const setupRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/setup',
+  component: SetupComponent,
 });
 
 const creatorRoute = createRoute({
@@ -200,6 +223,7 @@ const routeTree = rootRoute.addChildren([
   indexRoute,
   loginRoute,
   signupRoute,
+  setupRoute,
   creatorRoute,
   playerRoute,
   resultsRoute,
@@ -226,7 +250,7 @@ function RootComponent() {
   const context = rootRoute.useRouteContext();
   const routeRouter = useRouter();
   const routerState = useRouterState();
-  const { user, isAuthLoading } = useAppData();
+  const { user, isAuthLoading, allowSignup } = useAppData();
   const isPlaying = routerState.location.pathname.startsWith('/player');
   const isAuthPage = ['/login', '/signup'].includes(routerState.location.pathname);
 
@@ -355,13 +379,15 @@ function RootComponent() {
                       <LogIn className="h-4 w-4 mr-1.5" />
                       <span className="hidden sm:inline">{context.t('login')}</span>
                     </Link>
-                    <Link
-                      to="/signup"
-                      className="rounded-xl flex items-center text-xs sm:text-sm h-8 px-3 bg-indigo-600 hover:bg-indigo-500 text-white transition duration-200"
-                    >
-                      <UserPlus className="h-4 w-4 mr-1.5" />
-                      <span className="hidden sm:inline">{context.t('signup')}</span>
-                    </Link>
+                    {allowSignup && (
+                      <Link
+                        to="/signup"
+                        className="rounded-xl flex items-center text-xs sm:text-sm h-8 px-3 bg-indigo-600 hover:bg-indigo-500 text-white transition duration-200"
+                      >
+                        <UserPlus className="h-4 w-4 mr-1.5" />
+                        <span className="hidden sm:inline">{context.t('signup')}</span>
+                      </Link>
+                    )}
                   </div>
                 )}
               </>
@@ -478,6 +504,10 @@ function LoginComponent() {
 
 function SignupComponent() {
   return <SignupForm />;
+}
+
+function SetupComponent() {
+  return <SetupPage />;
 }
 
 function CreatorComponent() {
@@ -710,6 +740,8 @@ function AppContent() {
     user: auth.user,
     token: auth.token,
     isAuthLoading: auth.isLoading,
+    allowSignup: auth.allowSignup,
+    needsSetup: auth.needsSetup,
   };
 
   return (
@@ -743,6 +775,8 @@ function AppContent() {
           token: auth.token,
           logout: auth.logout,
           isAuthLoading: auth.isLoading,
+          allowSignup: auth.allowSignup,
+          needsSetup: auth.needsSetup,
         }}
       />
     </AppDataContext.Provider>

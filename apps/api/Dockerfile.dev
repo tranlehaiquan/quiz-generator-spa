@@ -12,5 +12,8 @@ COPY apps/api/tsconfig.json apps/api/
 # Install all deps
 RUN pnpm install --frozen-lockfile
 
-# Source is mounted at runtime; run dev server with hot-reload
-CMD ["pnpm", "--filter", "@aeroquiz/api", "dev"]
+# Copy entrypoint
+COPY apps/api/entrypoint.dev.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
