@@ -1,8 +1,6 @@
 services:
   db:
     image: postgres:16-alpine
-    dns: 127.0.0.11
-    dns_search: .
     environment:
       POSTGRES_DB: quizdb
       POSTGRES_USER: postgres
