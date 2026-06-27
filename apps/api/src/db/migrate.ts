@@ -1,7 +1,11 @@
-import 'dotenv/config';
-import { Pool } from 'pg';
+import "dotenv/config";
+import { Pool } from "pg";
 
-const pool = new Pool({ connectionString: process.env.DATABASE_URL || 'postgres://postgres:postgres@localhost:5432/quizdb' });
+const pool = new Pool({
+  connectionString:
+    process.env.DATABASE_URL ||
+    "postgres://postgres:postgres@postgres:5432/quizdb",
+});
 
 const migration = `
 CREATE TABLE IF NOT EXISTS "users" (
@@ -39,12 +43,12 @@ CREATE TABLE IF NOT EXISTS "history" (
 `;
 
 async function main() {
-  console.log('Running database migration...');
+  console.log("Running database migration...");
   try {
     await pool.query(migration);
-    console.log('Migration completed successfully.');
+    console.log("Migration completed successfully.");
   } catch (err) {
-    console.error('Migration failed:', err);
+    console.error("Migration failed:", err);
     process.exit(1);
   } finally {
     await pool.end();
