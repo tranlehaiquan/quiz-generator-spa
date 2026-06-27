@@ -3,6 +3,7 @@ import { generateObject } from 'ai';
 import { createOpenAI } from '@ai-sdk/openai';
 import { createAnthropic } from '@ai-sdk/anthropic';
 import { createDeepSeek } from '@ai-sdk/deepseek';
+import { createAlibaba } from '@ai-sdk/alibaba';
 import Tesseract from 'tesseract.js';
 import { z } from 'zod';
 
@@ -37,6 +38,15 @@ function getAIModel() {
   if (deepseekKey) {
     const deepseek = createDeepSeek({ apiKey: deepseekKey });
     return { name: 'deepseek', model: deepseek('deepseek-chat') };
+  }
+
+  const alibabaKey = process.env.ALIBABA_API_KEY;
+  if (alibabaKey) {
+    const alibaba = createAlibaba({
+      apiKey: alibabaKey,
+      baseURL: 'https://ws-p0sybqft3q7u7io0.ap-southeast-1.maas.aliyuncs.com/compatible-mode/v1',
+    });
+    return { name: 'alibaba', model: alibaba('qwen-plus') };
   }
 
   return null;

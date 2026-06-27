@@ -77,7 +77,10 @@ Return a well-structured quiz following the exact schema provided.`;
         if (!resolvedAlibabaKey) {
           return c.json({ error: 'Alibaba API key not configured.' }, 400);
         }
-        const alibaba = createAlibaba({ apiKey: resolvedAlibabaKey });
+        const alibaba = createAlibaba({
+          apiKey: resolvedAlibabaKey,
+          baseURL: 'https://ws-p0sybqft3q7u7io0.ap-southeast-1.maas.aliyuncs.com/compatible-mode/v1',
+        });
         aiModel = alibaba(model || 'qwen-plus');
       } else {
         if (!resolvedOpenAiKey) {
