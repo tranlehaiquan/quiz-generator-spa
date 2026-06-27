@@ -34,3 +34,14 @@ export const history = pgTable('history', {
   timeTaken: text('time_taken').notNull().default('0s'),
   timestamp: bigint('timestamp', { mode: 'number' }).notNull(),
 });
+
+export const guestAttempts = pgTable('guest_attempts', {
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+  quizId: text('quiz_id').references(() => quizzes.id, { onDelete: 'cascade' }).notNull(),
+  playerName: text('player_name').notNull(),
+  correctCount: integer('correct_count').notNull().default(0),
+  totalCount: integer('total_count').notNull().default(0),
+  timeTaken: text('time_taken').notNull().default('0s'),
+  answers: jsonb('answers').$type<Record<string, string>>().default({}),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});

@@ -1,7 +1,7 @@
 # Development compose — mounts source for hot-reload.
 # Run: docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
 services:
-  postgres:
+  db:
     ports:
       - "5432:5432"
 

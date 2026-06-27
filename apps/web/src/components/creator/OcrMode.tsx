@@ -31,16 +31,16 @@ export default function OcrMode({ onScanComplete, addToast, t, lang }: OcrModePr
     }
 
     setIsScanning(true);
-    setScannerStatus(lang === 'vi' ? "Đang tải ảnh lên..." : "Uploading image...");
+    setScannerStatus(lang === 'vi' ? "Đang tải ảnh lên máy chủ..." : "Uploading image to server...");
 
     const reader = new FileReader();
     reader.onload = (e) => { if (e.target?.result) setScannerPreviewUrl(e.target.result as string); };
     reader.readAsDataURL(file);
 
     const timers = [
-      setTimeout(() => setScannerStatus(lang === 'vi' ? "Tesseract OCR đang đọc ảnh..." : "Tesseract OCR reading image..."), 1500),
-      setTimeout(() => setScannerStatus(lang === 'vi' ? "Đang nhận diện văn bản..." : "Recognizing text..."), 3500),
-      setTimeout(() => setScannerStatus(lang === 'vi' ? "AI đang cấu trúc đề thi..." : "AI structuring quiz..."), 7000),
+      setTimeout(() => setScannerStatus(lang === 'vi' ? "Khởi động Tesseract OCR..." : "Starting Tesseract OCR engine..."), 1200),
+      setTimeout(() => setScannerStatus(lang === 'vi' ? "Đang nhận diện ký tự tiếng Việt..." : "Recognizing characters & layout..."), 3000),
+      setTimeout(() => setScannerStatus(lang === 'vi' ? "Đang cấu trúc hoá câu hỏi bằng AI..." : "Structuring questions via AI Model..."), 6000),
     ];
 
     try {
@@ -48,15 +48,6 @@ export default function OcrMode({ onScanComplete, addToast, t, lang }: OcrModePr
 
       if (res.ok) {
         const scannedQuiz = await res.json() as Quiz & { rawText?: string };
-        if (scannedQuiz.rawText) {
-          addToast(
-            lang === 'vi' ? 'OCR hoàn tất (văn bản thô)' : 'OCR complete (raw text)',
-            lang === 'vi' ? 'Không có AI để cấu trúc. Văn bản thô đã được chèn vào editor.' : 'No AI configured for structuring. Raw text placed in editor.',
-            'warning'
-          );
-        } else {
-          addToast(t('scanSuccess'), lang === 'vi' ? "Nhấp 'Bắt đầu làm bài' để chơi!" : "Click 'Parse & Play' to start!", "success");
-        }
         onScanComplete(scannedQuiz);
       } else {
         const errorData = await res.json() as { error?: string };
@@ -79,20 +70,22 @@ export default function OcrMode({ onScanComplete, addToast, t, lang }: OcrModePr
   };
 
   return (
-    <div className="animate-in fade-in duration-200">
+    <div className="animate-in fade-in duration-300">
       <div
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
-        onClick={() => fileInputRef.current?.click()}
-        className={`relative rounded-2xl border-2 border-dashed p-8 text-center cursor-pointer transition duration-300 flex flex-col items-center justify-center min-h-[280px] overflow-hidden group ${
-          isDragOver
-            ? 'border-indigo-400 bg-indigo-950/20'
-            : 'border-slate-700 bg-slate-950/30 hover:border-slate-600 hover:bg-slate-900/10'
+        onClick={() => !isScanning && fileInputRef.current?.click()}
+        className={`relative rounded-3xl border-2 border-dashed p-10 text-center transition-all duration-300 flex flex-col items-center justify-center min-h-[300px] overflow-hidden group ${
+          isScanning 
+            ? 'border-indigo-500/40 bg-slate-950/20 cursor-wait'
+            : isDragOver
+              ? 'border-indigo-400 bg-indigo-950/20 scale-[1.01]'
+              : 'border-slate-800 bg-slate-950/30 hover:border-slate-700 hover:bg-slate-900/10 cursor-pointer'
         }`}
       >
         {scannerPreviewUrl && (
-          <img src={scannerPreviewUrl} className="absolute inset-0 w-full h-full object-cover opacity-15 filter blur-[2px] pointer-events-none" alt="preview" />
+          <img src={scannerPreviewUrl} className="absolute inset-0 w-full h-full object-cover opacity-10 filter blur-[3px] pointer-events-none" alt="preview" />
         )}
         {isScanning && (
           <div className="absolute inset-x-0 h-0.5 bg-indigo-500/80 shadow-[0_0_12px_#6366f1] animate-scan pointer-events-none z-10" />
@@ -101,23 +94,25 @@ export default function OcrMode({ onScanComplete, addToast, t, lang }: OcrModePr
           onChange={(e) => { if (e.target.files?.[0]) handleScanFile(e.target.files[0]); }} />
 
         {isScanning ? (
-          <div className="space-y-4 z-20">
-            <div className="p-4 bg-indigo-500/10 border border-indigo-500/25 text-indigo-400 rounded-full w-16 h-16 flex items-center justify-center mx-auto">
+          <div className="space-y-4 z-20 animate-pulse">
+            <div className="p-4 bg-indigo-650/15 border border-indigo-500/35 text-indigo-400 rounded-full w-18 h-18 flex items-center justify-center mx-auto shadow-lg shadow-indigo-500/5">
               <FileUp className="h-8 w-8 animate-bounce" />
             </div>
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <h4 className="font-bold text-sm text-slate-200">{t('scanning')}</h4>
-              <p className="text-xs text-indigo-400/80 font-mono">{scannerStatus}</p>
+              <div className="inline-block bg-slate-950/80 border border-slate-850 px-4 py-1.5 rounded-xl font-mono text-[10px] text-indigo-400 shadow-inner">
+                {scannerStatus}
+              </div>
             </div>
           </div>
         ) : (
-          <div className="space-y-4 z-20">
-            <div className="p-4 bg-slate-900/60 border border-slate-800 text-slate-400 group-hover:text-indigo-400 group-hover:border-indigo-500/25 group-hover:bg-indigo-500/5 rounded-full w-16 h-16 flex items-center justify-center mx-auto transition duration-300">
+          <div className="space-y-5 z-20">
+            <div className="p-4 bg-slate-900/60 border border-slate-850 text-slate-500 group-hover:text-indigo-400 group-hover:border-indigo-500/30 group-hover:bg-indigo-500/5 group-hover:scale-105 rounded-full w-18 h-18 flex items-center justify-center mx-auto shadow-md transition duration-300">
               <UploadCloud className="h-8 w-8" />
             </div>
-            <div className="space-y-1 max-w-xs mx-auto">
-              <h4 className="font-bold text-sm text-slate-200 group-hover:text-indigo-300 transition">{t('scanZone')}</h4>
-              <p className="text-xs text-slate-500 leading-relaxed">{t('scanSupport')}</p>
+            <div className="space-y-2 max-w-xs mx-auto">
+              <h4 className="font-bold text-sm text-slate-200 group-hover:text-indigo-300 transition duration-300">{t('scanZone')}</h4>
+              <p className="text-xs text-slate-500 leading-relaxed font-medium">{t('scanSupport')}</p>
             </div>
           </div>
         )}

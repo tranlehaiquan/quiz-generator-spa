@@ -7,9 +7,6 @@ import {
   PlusCircle,
   HelpCircle,
   Languages,
-  CheckCircle2,
-  AlertTriangle,
-  Info,
   X,
   LogIn,
   UserPlus,
@@ -40,6 +37,9 @@ import LoginForm from './components/auth/LoginForm.tsx';
 import SetupPage from './components/auth/SetupPage.tsx';
 
 import SignupForm from './components/auth/SignupForm.tsx';
+import { Toaster } from '@/components/ui/sonner';
+import { toast } from 'sonner';
+import LeaderboardPage from './components/LeaderboardPage.tsx';
 
 // ==========================================
 // TYPES & SCHEMAS
@@ -122,16 +122,19 @@ interface RouterContext {
   stats: { playedCount: number; avgScore: number; savedCount: number };
   onStartQuiz: (quiz: Quiz) => void;
   onDeleteQuiz: (quizId: string) => void;
+  onEditQuiz: (quiz: Quiz) => void;
   onClearHistory: () => void;
   onNavigateToCreate: () => void;
   onQuizCreated: (nq: Quiz) => void;
+  onQuizUpdated: (nq: Quiz) => void;
   onFinishQuiz: (
     quiz: Quiz,
     correctCount: number,
     totalCount: number,
     timeTakenStr: string,
     answers: Record<number, string>,
-    elapsedSeconds: number
+    elapsedSeconds: number,
+    guestName?: string
   ) => void;
   addToast: (title: string, message: string, type: 'success' | 'error' | 'warning' | 'info') => void;
   t: TFunction;
@@ -207,6 +210,22 @@ const creatorRoute = createRoute({
   component: CreatorComponent,
 });
 
+const editorRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/editor/$quizId',
+  beforeLoad: ({ context }) => {
+    if (!context.isAuthLoading && !context.user) {
+      context.addToast(
+        context.t('login'),
+        context.t('loginRequired'),
+        'warning'
+      );
+      throw redirect({ to: '/login' });
+    }
+  },
+  component: EditorComponent,
+});
+
 const playerRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/player/$quizId',
@@ -219,14 +238,27 @@ const resultsRoute = createRoute({
   component: ResultsComponent,
 });
 
+const leaderboardRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/leaderboard/$quizId',
+  beforeLoad: ({ context }) => {
+    if (!context.isAuthLoading && !context.user) {
+      throw redirect({ to: '/login' });
+    }
+  },
+  component: LeaderboardComponent,
+});
+
 const routeTree = rootRoute.addChildren([
   indexRoute,
   loginRoute,
   signupRoute,
   setupRoute,
   creatorRoute,
+  editorRoute,
   playerRoute,
   resultsRoute,
+  leaderboardRoute,
 ]);
 
 const router = createRouter({
@@ -259,16 +291,16 @@ function RootComponent() {
   return (
     <div className="min-h-screen text-slate-100 flex flex-col selection:bg-indigo-500 selection:text-white pb-12">
       {/* Navigation Header */}
-      <header className="sticky top-0 z-40 w-full border-b border-indigo-500/10 bg-slate-950/70 backdrop-blur-md">
+      <header className="sticky top-0 z-45 w-full border-b border-indigo-500/10 bg-slate-950/70 backdrop-blur-md shadow-[0_4px_30px_rgba(0,0,0,0.1)]">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div
-            className="flex items-center space-x-2 cursor-pointer"
+            className="flex items-center space-x-2.5 cursor-pointer group"
             onClick={() => routeRouter.navigate({ to: '/' })}
           >
-            <div className="p-2 bg-indigo-500/10 border border-indigo-500/20 rounded-xl shadow-[0_0_15px_rgba(99,102,241,0.15)] animate-pulse">
-              <BrainCircuit className="h-6 w-6 text-indigo-400" />
+            <div className="p-2 bg-indigo-600/10 border border-indigo-500/20 rounded-xl shadow-[0_0_15px_rgba(99,102,241,0.1)] group-hover:scale-105 group-hover:shadow-[0_0_20px_rgba(99,102,241,0.35)] group-hover:border-indigo-500/40 transition-all duration-300">
+              <BrainCircuit className="h-5 w-5 text-indigo-400 group-hover:text-indigo-300 transition duration-300" />
             </div>
-            <span className="font-extrabold text-xl tracking-tight bg-gradient-to-r from-white via-indigo-200 to-indigo-400 bg-clip-text text-transparent">
+            <span className="font-black text-xl tracking-tight bg-gradient-to-r from-white via-indigo-100 to-indigo-300 bg-clip-text text-transparent group-hover:to-indigo-200 transition duration-300">
               AeroQuiz
             </span>
           </div>
@@ -278,8 +310,8 @@ function RootComponent() {
               <>
                 <Link
                   to="/"
-                  className="rounded-xl flex items-center text-xs sm:text-sm h-8 px-3.5 text-slate-400 hover:text-slate-100 hover:bg-slate-800/40 transition duration-200"
-                  activeProps={{ className: 'bg-slate-800 text-slate-100 hover:bg-slate-800' }}
+                  className="rounded-xl flex items-center text-xs sm:text-sm h-9 px-3.5 border border-transparent text-slate-400 hover:text-indigo-300 hover:bg-indigo-600/5 hover:border-indigo-500/10 transition duration-200"
+                  activeProps={{ className: 'bg-indigo-600/10 text-indigo-300 border-indigo-500/25 hover:bg-indigo-600/15' }}
                 >
                   <LayoutDashboard className="h-4 w-4 mr-1.5" />
                   <span className="hidden sm:inline">{context.t('dashboard')}</span>
@@ -290,8 +322,8 @@ function RootComponent() {
                     <Link
                       to="/creator"
                       search={{ mode: 'json' }}
-                      className="rounded-xl flex items-center text-xs sm:text-sm h-8 px-3.5 text-slate-400 hover:text-slate-100 hover:bg-slate-800/40 transition duration-200"
-                      activeProps={{ className: 'bg-slate-800 text-slate-100 hover:bg-slate-800' }}
+                      className="rounded-xl flex items-center text-xs sm:text-sm h-9 px-3.5 border border-transparent text-slate-400 hover:text-indigo-300 hover:bg-indigo-600/5 hover:border-indigo-500/10 transition duration-200"
+                      activeProps={{ className: 'bg-indigo-600/10 text-indigo-300 border-indigo-500/25 hover:bg-indigo-600/15' }}
                     >
                       <PlusCircle className="h-4 w-4 mr-1.5" />
                       <span className="hidden sm:inline">{context.t('createQuiz')}</span>
@@ -306,12 +338,12 @@ function RootComponent() {
             <Button
               variant="ghost"
               size="icon"
-              className="relative rounded-xl h-9 w-9 text-slate-400 hover:text-slate-100 hover:bg-slate-800/50"
+              className="relative rounded-xl h-9 w-9 text-slate-400 hover:text-indigo-300 hover:bg-indigo-600/5 border border-transparent hover:border-indigo-500/10 transition duration-200"
               onClick={() => context.setLang(context.lang === 'vi' ? 'en' : 'vi')}
               title="Switch Language"
             >
               <Languages className="h-4 w-4" />
-              <span className="text-[10px] font-bold absolute -bottom-1 -right-1 bg-indigo-600 text-white rounded-md px-1 py-0.5 border border-indigo-500 scale-75 uppercase">
+              <span className="text-[9px] font-bold absolute -bottom-1 -right-1 bg-indigo-600 text-white rounded-md px-1 py-0.5 border border-indigo-500 scale-75 uppercase">
                 {context.lang}
               </span>
             </Button>
@@ -320,7 +352,7 @@ function RootComponent() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="rounded-xl h-9 w-9 text-slate-400 hover:text-slate-100 hover:bg-slate-800/50"
+                className="rounded-xl h-9 w-9 text-slate-400 hover:text-indigo-300 hover:bg-indigo-600/5 border border-transparent hover:border-indigo-500/10 transition duration-200"
                 onClick={() => context.setShowHelpModal(true)}
               >
                 <HelpCircle className="h-4 w-4" />
@@ -330,19 +362,19 @@ function RootComponent() {
             {!isAuthPage && (
               <>
                 {isAuthLoading ? (
-                  <div className="h-8 w-8 rounded-xl bg-slate-800/30 animate-pulse" />
+                  <div className="h-9 w-9 rounded-xl bg-slate-850/40 animate-pulse" />
                 ) : user ? (
                   <div className="relative">
                     <button
                       onClick={() => setUserMenuOpen(!userMenuOpen)}
-                      className="flex items-center space-x-2 rounded-xl h-9 px-3 text-slate-400 hover:text-slate-100 hover:bg-slate-800/50 transition duration-200"
+                      className="flex items-center space-x-2 rounded-xl h-9 px-3 border border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-800/40 transition duration-200"
                     >
-                      <div className="h-7 w-7 rounded-full bg-indigo-600 flex items-center justify-center">
-                        <span className="text-xs font-bold text-white">
+                      <div className="h-6.5 w-6.5 rounded-full bg-gradient-to-tr from-indigo-600 to-purple-600 shadow-[0_0_10px_rgba(99,102,241,0.25)] flex items-center justify-center">
+                        <span className="text-[10px] font-bold text-white leading-none">
                           {user.name.charAt(0).toUpperCase()}
                         </span>
                       </div>
-                      <span className="hidden sm:inline text-sm font-medium text-slate-300 max-w-24 truncate">
+                      <span className="hidden sm:inline text-xs font-semibold text-slate-300 max-w-24 truncate">
                         {user.name}
                       </span>
                     </button>
@@ -401,41 +433,8 @@ function RootComponent() {
         <Outlet />
       </main>
 
-      {/* Toast Notifications */}
-      <div className="fixed bottom-4 right-4 z-50 flex flex-col space-y-2.5 max-w-sm w-full pointer-events-none">
-        {context.toasts.map(toast => {
-          let typeColorClass = "border-indigo-500/20 bg-slate-900/90 text-indigo-400";
-          let Icon = Info;
-          if (toast.type === 'success') {
-            typeColorClass = "border-emerald-500/25 bg-emerald-950/80 text-emerald-400";
-            Icon = CheckCircle2;
-          } else if (toast.type === 'warning') {
-            typeColorClass = "border-amber-500/25 bg-amber-950/80 text-amber-400";
-            Icon = AlertTriangle;
-          } else if (toast.type === 'error') {
-            typeColorClass = "border-rose-500/25 bg-rose-950/80 text-rose-400";
-            Icon = AlertTriangle;
-          }
-          return (
-            <div
-              key={toast.id}
-              className={`p-4 rounded-2xl border backdrop-blur-xl pointer-events-auto flex items-start space-x-3 shadow-2xl transition duration-300 animate-in fade-in slide-in-from-right-5 ${typeColorClass}`}
-            >
-              <Icon className="h-5 w-5 shrink-0 mt-0.5" />
-              <div className="flex-1 space-y-0.5">
-                <p className="font-bold text-sm text-slate-100">{toast.title}</p>
-                <p className="text-xs opacity-90 leading-normal">{toast.message}</p>
-              </div>
-              <button
-                onClick={() => context.setToasts(prev => prev.filter(to => to.id !== toast.id))}
-                className="text-slate-400 hover:text-slate-200 transition"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-          );
-        })}
-      </div>
+      {/* Sonner Toaster */}
+      <Toaster />
 
       {/* Help Modal */}
       {context.showHelpModal && (
@@ -491,9 +490,12 @@ function IndexComponent() {
       stats={stats}
       onStartQuiz={context.onStartQuiz}
       onDeleteQuiz={context.onDeleteQuiz}
+      onEditQuiz={context.onEditQuiz}
       onClearHistory={context.onClearHistory}
       onNavigateToCreate={context.onNavigateToCreate}
       t={context.t}
+      addToast={context.addToast}
+      token={context.token}
     />
   );
 }
@@ -523,6 +525,52 @@ function CreatorComponent() {
       onCancel={() => routeRouter.navigate({ to: '/' })}
       addToast={context.addToast}
       t={context.t}
+      lang={context.lang}
+    />
+  );
+}
+
+function EditorComponent() {
+  const context = editorRoute.useRouteContext();
+  const routeRouter = useRouter();
+  const { quizId } = editorRoute.useParams();
+  const { quizzes } = useAppData();
+
+  const quiz = quizzes.custom.find(q => q.id === quizId) ?? null;
+
+  if (!quiz) {
+    return (
+      <div className="flex justify-center items-center py-32">
+        <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-indigo-500" />
+      </div>
+    );
+  }
+
+  return (
+    <JSONEditor
+      mode="json"
+      onModeChange={() => {}}
+      onQuizCreated={context.onQuizCreated}
+      onQuizUpdated={context.onQuizUpdated}
+      onCancel={() => routeRouter.navigate({ to: '/' })}
+      addToast={context.addToast}
+      t={context.t}
+      lang={context.lang}
+      editingQuiz={quiz}
+    />
+  );
+}
+
+function LeaderboardComponent() {
+  const context = leaderboardRoute.useRouteContext();
+  const routeRouter = useRouter();
+  const { quizId } = leaderboardRoute.useParams();
+
+  return (
+    <LeaderboardPage
+      quizId={quizId}
+      token={context.token!}
+      onBack={() => routeRouter.navigate({ to: '/' })}
       lang={context.lang}
     />
   );
@@ -582,15 +630,19 @@ function PlayerComponent() {
 
   if (!quiz) return null;
 
+  const queryParams = new URLSearchParams(window.location.search);
+  const isRecordMode = queryParams.get('record') === 'true';
+
   return (
     <QuizPlayer
       quiz={quiz}
-      onFinishQuiz={(correctCount, totalCount, timeTakenStr, answers, elapsedSeconds) =>
-        context.onFinishQuiz(quiz, correctCount, totalCount, timeTakenStr, answers, elapsedSeconds)
+      onFinishQuiz={(correctCount, totalCount, timeTakenStr, answers, elapsedSeconds, guestName) =>
+        context.onFinishQuiz(quiz, correctCount, totalCount, timeTakenStr, answers, elapsedSeconds, guestName)
       }
       onExitQuiz={() => routeRouter.navigate({ to: '/' })}
       t={context.t}
       lang={context.lang}
+      recordMode={isRecordMode}
     />
   );
 }
@@ -615,6 +667,7 @@ function ResultsComponent() {
       onRetake={() => context.onStartQuiz(context.lastResult!.quiz)}
       onHome={() => routeRouter.navigate({ to: '/' })}
       t={context.t}
+      addToast={context.addToast}
     />
   );
 }
@@ -635,9 +688,11 @@ function AppContent() {
   const setLang = (l: 'vi' | 'en') => { i18n.changeLanguage(l); };
 
   const addToast = (title: string, message: string, type: 'success' | 'error' | 'warning' | 'info' = 'info') => {
-    const id = Date.now().toString();
-    setToasts(prev => [...prev, { id, title, message, type }]);
-    setTimeout(() => setToasts(prev => prev.filter(to => to.id !== id)), 4500);
+    const options = { description: message };
+    if (type === 'success') toast.success(title, options);
+    else if (type === 'error') toast.error(title, options);
+    else if (type === 'warning') toast.warning(title, options);
+    else toast(title, options);
   };
 
   const fetchData = async () => {
@@ -672,11 +727,36 @@ function AppContent() {
     totalCount: number,
     timeTakenStr: string,
     answers: Record<number, string>,
-    elapsedSeconds: number
+    elapsedSeconds: number,
+    guestName?: string
   ) => {
     setLastResult({ quiz, answers, elapsedSeconds, correctCount, totalCount });
 
-    if (auth.token) {
+    if (guestName) {
+      try {
+        const res = await fetch(`/api/quizzes/${quiz.id}/guest-attempts`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            playerName: guestName,
+            timeTaken: timeTakenStr,
+            answers,
+          }),
+        });
+        if (res.ok) {
+          const scoreData = await res.json();
+          if (scoreData && typeof scoreData.correctCount === 'number') {
+            setLastResult({
+              quiz,
+              answers,
+              elapsedSeconds,
+              correctCount: scoreData.correctCount,
+              totalCount: scoreData.totalCount,
+            });
+          }
+        }
+      } catch { /* ignore */ }
+    } else if (auth.token) {
       try {
         const res = await client.api.history.$post({
           json: {
@@ -754,12 +834,18 @@ function AppContent() {
           stats: { playedCount: totalAttempts, avgScore: avgScorePct, savedCount: quizzes.custom.length },
           onStartQuiz: handleStartQuiz,
           onDeleteQuiz: handleDeleteQuiz,
+          onEditQuiz: (quiz) => router.navigate({ to: '/editor/$quizId', params: { quizId: quiz.id } }),
           onClearHistory: handleClearHistory,
           onNavigateToCreate: () => router.navigate({ to: '/creator', search: { mode: 'json' } }),
           onQuizCreated: (nq) => {
             addToast(lang === 'vi' ? "Đã lưu đề thi!" : "Quiz saved!", nq.title, "success");
             fetchData();
             handleStartQuiz(nq);
+          },
+          onQuizUpdated: (nq) => {
+            addToast(lang === 'vi' ? "Đã cập nhật đề thi!" : "Quiz updated!", nq.title, "success");
+            fetchData();
+            router.navigate({ to: '/' });
           },
           onFinishQuiz: handleFinishQuiz,
           addToast,
