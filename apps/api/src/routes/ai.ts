@@ -3,6 +3,7 @@ import { generateObject } from 'ai';
 import { createOpenAI } from '@ai-sdk/openai';
 import { createAnthropic } from '@ai-sdk/anthropic';
 import { createDeepSeek } from '@ai-sdk/deepseek';
+import { createAlibaba } from '@ai-sdk/alibaba';
 import { z } from 'zod';
 
 const QuizSchema = z.object({
@@ -37,6 +38,7 @@ const ai = new Hono()
 
       const resolvedOpenAiKey = apiKey || process.env.OPENAI_API_KEY || '';
       const resolvedAnthropicKey = apiKey || process.env.ANTHROPIC_API_KEY || '';
+      const resolvedAlibabaKey = apiKey || process.env.ALIBABA_API_KEY || '';
 
       const langInstruction = lang === 'vi'
         ? 'Generate quiz content in Vietnamese language.'
@@ -71,6 +73,12 @@ Return a well-structured quiz following the exact schema provided.`;
         }
         const deepseek = createDeepSeek({ apiKey: resolvedDeepSeekKey });
         aiModel = deepseek(model || 'deepseek-chat');
+      } else if (provider === 'alibaba') {
+        if (!resolvedAlibabaKey) {
+          return c.json({ error: 'Alibaba API key not configured.' }, 400);
+        }
+        const alibaba = createAlibaba({ apiKey: resolvedAlibabaKey });
+        aiModel = alibaba(model || 'qwen-plus');
       } else {
         if (!resolvedOpenAiKey) {
           return c.json({ error: 'OpenAI API key not configured.' }, 400);

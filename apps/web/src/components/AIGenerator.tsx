@@ -18,6 +18,13 @@ const PROVIDERS = [
     keyPlaceholder: 'sk-...',
   },
   {
+    id: 'alibaba',
+    label: 'Qwen (Alibaba)',
+    models: ['qwen-plus', 'qwen-max', 'qwen-turbo', 'qwen-plus-latest', 'qwen-max-latest', 'qwen3-235b-a22b'],
+    defaultModel: 'qwen-plus',
+    keyPlaceholder: 'sk-...',
+  },
+  {
     id: 'openai',
     label: 'OpenAI',
     models: ['gpt-4o-mini', 'gpt-4o', 'gpt-4-turbo'],
