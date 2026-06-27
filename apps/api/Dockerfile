@@ -24,6 +24,9 @@ RUN pnpm --filter @aeroquiz/api deploy --prod --legacy /deploy
 # ---- Runtime Stage ----
 FROM node:22-alpine
 
+# Debug tools
+RUN apk add --no-cache bash curl
+
 WORKDIR /app
 
 COPY --from=pruner /deploy /app
