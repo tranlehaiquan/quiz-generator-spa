@@ -33,6 +33,18 @@ CREATE TABLE IF NOT EXISTS "history" (
   "time_taken" TEXT NOT NULL DEFAULT '0s',
   "timestamp" BIGINT NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS "guest_attempts" (
+  "id" TEXT PRIMARY KEY,
+  "quiz_id" TEXT NOT NULL REFERENCES "quizzes"("id") ON DELETE CASCADE,
+  "player_name" TEXT NOT NULL,
+  "correct_count" INTEGER NOT NULL DEFAULT 0,
+  "total_count" INTEGER NOT NULL DEFAULT 0,
+  "time_taken" TEXT NOT NULL DEFAULT '0s',
+  "created_at" TIMESTAMP DEFAULT NOW() NOT NULL
+);
+
+ALTER TABLE "guest_attempts" ADD COLUMN IF NOT EXISTS "answers" JSONB DEFAULT '{}';
 `;
 
 export async function runMigrations(databaseUrl: string): Promise<void> {
