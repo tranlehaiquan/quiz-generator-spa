@@ -8,15 +8,29 @@ interface RichTextProps {
 export default function RichText({ text, className = '' }: RichTextProps) {
   if (!text) return null;
 
-  // Split text by display math, inline math, inline code, bold, and italic markers
+  // Split text by block code, display math, inline math, inline code, bold, and italic markers
   // Capturing group ensures matched delimiters are kept in the split array
-  const regex = /(\$\$[\s\S]+?\$\$|\$[\s\S]+?\$|`[\s\S]+?`|\*\*[\s\S]+?\*\*|\*[\s\S]+?\*)/g;
+  const regex = /(```[\s\S]+?```|\$\$[\s\S]+?\$\$|\$[\s\S]+?\$|`[\s\S]+?`|\*\*[\s\S]+?\*\*|\*[\s\S]+?\*)/g;
   const parts = text.split(regex);
 
   return (
     <span className={`inline-block ${className}`}>
       {parts.map((part, index) => {
-        // 1. Display Math: $$ ... $$
+        // 1. Block Code: ``` ... ```
+        if (part.startsWith('```') && part.endsWith('```')) {
+          const code = part.slice(3, -3).trim();
+          const langMatch = code.match(/^(\w+)\s*\n/);
+          const lang = langMatch ? langMatch[1] : '';
+          const displayCode = langMatch ? code.slice(langMatch[0].length) : code;
+          return (
+            <pre key={index} className="block my-2 p-3 bg-slate-900 border border-slate-800 rounded-md overflow-x-auto">
+              {lang && <span className="block text-[11px] uppercase tracking-wide text-slate-500 mb-1">{lang}</span>}
+              <code className="text-indigo-300 font-mono text-[13px]">{displayCode}</code>
+            </pre>
+          );
+        }
+
+        // 2. Display Math: $$ ... $$
         if (part.startsWith('$$') && part.endsWith('$$')) {
           const formula = part.slice(2, -2).trim();
           try {
@@ -36,7 +50,7 @@ export default function RichText({ text, className = '' }: RichTextProps) {
           }
         }
 
-        // 2. Inline Math: $ ... $
+        // 3. Inline Math: $ ... $
         if (part.startsWith('$') && part.endsWith('$')) {
           const formula = part.slice(1, -1).trim();
           try {
@@ -56,7 +70,7 @@ export default function RichText({ text, className = '' }: RichTextProps) {
           }
         }
 
-        // 3. Inline Code: ` ... `
+        // 4. Inline Code: ` ... `
         if (part.startsWith('`') && part.endsWith('`')) {
           const code = part.slice(1, -1);
           return (
@@ -69,19 +83,19 @@ export default function RichText({ text, className = '' }: RichTextProps) {
           );
         }
 
-        // 4. Bold: ** ... **
+        // 5. Bold: ** ... **
         if (part.startsWith('**') && part.endsWith('**')) {
           const boldText = part.slice(2, -2);
           return <strong key={index} className="font-extrabold text-slate-100">{boldText}</strong>;
         }
 
-        // 5. Italic: * ... *
+        // 6. Italic: * ... *
         if (part.startsWith('*') && part.endsWith('*')) {
           const italicText = part.slice(1, -1);
           return <em key={index} className="italic text-slate-300">{italicText}</em>;
         }
 
-        // 6. Plain Text with line breaks
+        // 7. Plain Text with line breaks
         return (
           <span key={index} className="whitespace-pre-line leading-relaxed">
             {part}

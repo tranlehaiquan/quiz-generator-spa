@@ -63,7 +63,14 @@ For each question:
 - Identify the correct answer (if marked/circled in the text, use that; otherwise use your knowledge)
 - Provide a brief explanation for the correct answer
 
-Return a well-structured quiz with a descriptive title, short description, and 2-3 relevant topic tags.`;
+Return a well-structured quiz with a descriptive title, short description, and 2-3 relevant topic tags.
+
+IMPORTANT - Formatting: Use the following syntax for rich text in questions, options, and explanations:
+- For math formulas: use $...$ for inline math (e.g., $x^2 + y^2 = r^2$) and $$...$$ for display/block math (e.g., $$E = mc^2$$)
+- For code: use \`...\` for inline code (e.g., \`Array.map()\`) and \`\`\`...\`\`\` for code blocks
+- For bold text: use **...** (e.g., **important concept**)
+- For italic text: use *...* (e.g., *emphasis*)
+Always use these format markers when questions involve math, programming, or technical content.`;
 
   const result = await generateObject({
     model: ai.model,

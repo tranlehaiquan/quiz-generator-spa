@@ -51,7 +51,14 @@ const ai = new Hono()
       };
 
       const systemPrompt = `You are an expert quiz creator and educator. ${langInstruction}
-Create high-quality multiple-choice quiz questions. Each question must have exactly 4 answer options and one clearly correct answer. Include a brief explanation for why the correct answer is right.`;
+Create high-quality multiple-choice quiz questions. Each question must have exactly 4 answer options and one clearly correct answer. Include a brief explanation for why the correct answer is right.
+
+IMPORTANT - Formatting: Use the following syntax for rich text in questions, options, and explanations:
+- For math formulas: use $...$ for inline math (e.g., $x^2 + y^2 = r^2$) and $$...$$ for display/block math (e.g., $$E = mc^2$$)
+- For code: use \`...\` for inline code (e.g., \`Array.map()\`) and \`\`\`...\`\`\` for code blocks
+- For bold text: use **...** (e.g., **important concept**)
+- For italic text: use *...* (e.g., *emphasis*)
+Always use these format markers when questions involve math, programming, or technical content.`;
 
       const userPrompt = `Create a quiz with exactly ${count} questions about: "${topic}".
 Difficulty level: ${difficultyMap[difficulty] || difficultyMap.medium}.
