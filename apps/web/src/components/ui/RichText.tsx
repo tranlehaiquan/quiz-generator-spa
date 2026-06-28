@@ -1,3 +1,4 @@
+import React from 'react';
 import katex from 'katex';
 
 interface RichTextProps {
@@ -25,39 +26,39 @@ function tokenize(text: string): Token[] {
   const patterns: [RegExp, (m: RegExpExecArray) => Token][] = [
     // Block code: ```lang?\ncode```
     [
-      /```([\w]*)\n?([\s\S]*?)```/g,
+      /```([\w]*)\n?([\s\S]*?)```/,
       (m) => ({ kind: 'block-code', lang: m[1] ?? '', code: m[2] ?? '' }),
     ],
     // Display math: $$...$$
     [
-      /\$\$([\s\S]+?)\$\$/g,
+      /\$\$([\s\S]+?)\$\$/,
       (m) => ({ kind: 'display-math', formula: m[1]!.trim() }),
     ],
-    // Inline math: $...$  (single-char content is fine, e.g. $x$)
+    // Inline math: $...$ (single-char content is fine, e.g. $x$)
     [
-      /\$([^\$\n]+?)\$/g,
+      /\$([^$\n]+?)\$/,
       (m) => ({ kind: 'inline-math', formula: m[1]!.trim() }),
     ],
     // Inline code: `...`
     [
-      /`([^`]+?)`/g,
+      /`([^`]+?)`/,
       (m) => ({ kind: 'inline-code', code: m[1]! }),
     ],
-    // Bold: **...**  (must come before italic)
+    // Bold: **...** (must come before italic)
     [
-      /\*\*(.+?)\*\*/g,
+      /\*\*(.+?)\*\*/,
       (m) => ({ kind: 'bold', content: m[1]! }),
     ],
     // Italic: *...*
     [
-      /\*(.+?)\*/g,
+      /\*(.+?)\*/,
       (m) => ({ kind: 'italic', content: m[1]! }),
     ],
   ];
 
-  // Build a combined regex that remembers which group matched
+  // Build a combined regex from all pattern sources (no individual /g flags)
   const combined = new RegExp(
-    patterns.map(([re]) => re.source).join('|'),
+    patterns.map(([re]) => '(' + re.source + ')').join('|'),
     'g',
   );
 
@@ -69,12 +70,10 @@ function tokenize(text: string): Token[] {
       tokens.push({ kind: 'text', content: text.slice(lastIndex, match.index) });
     }
 
-    // Find which pattern matched by checking capture groups
-    // Groups are numbered sequentially: pattern 0 uses g1+g2, pattern 1 uses g3, etc.
-    // Easier: re-test each pattern against the full match string
+    // Re-test each pattern against the matched string to identify token type
     let pushed = false;
     for (const [re, factory] of patterns) {
-      const singleRe = new RegExp('^' + re.source + '$');
+      const singleRe = new RegExp('^(?:' + re.source + ')$');
       const m2 = singleRe.exec(match[0]);
       if (m2) {
         tokens.push(factory(m2));
@@ -97,23 +96,19 @@ function tokenize(text: string): Token[] {
   return tokens;
 }
 
-function renderMath(formula: string, displayMode: boolean, fallback: string): React.ReactNode {
+function renderMathHtml(formula: string, displayMode: boolean): string | null {
   try {
-    const html = katex.renderToString(formula, { displayMode, throwOnError: false });
-    return html;
+    return katex.renderToString(formula, { displayMode, throwOnError: false });
   } catch {
-    return null; // signal to caller to use fallback
+    return null;
   }
 }
 
-function TokenNode({ token, index }: { token: Token; index: number }) {
+function TokenNode({ token }: { token: Token }): React.ReactElement {
   switch (token.kind) {
     case 'block-code':
       return (
-        <pre
-          key={index}
-          className="block my-2 p-3 bg-slate-900 border border-slate-800 rounded-md overflow-x-auto"
-        >
+        <pre className="block my-2 p-3 bg-slate-900 border border-slate-800 rounded-md overflow-x-auto">
           {token.lang && (
             <span className="block text-[11px] uppercase tracking-wide text-slate-500 mb-1">
               {token.lang}
@@ -126,62 +121,59 @@ function TokenNode({ token, index }: { token: Token; index: number }) {
       );
 
     case 'display-math': {
-      const html = renderMath(token.formula, true, token.formula);
-      return html ? (
-        <span
-          key={index}
-          className="block my-3 overflow-x-auto text-center"
-          dangerouslySetInnerHTML={{ __html: html as string }}
-        />
-      ) : (
-        <span key={index} className="block my-3 text-rose-400 font-mono">
-          {'$$' + token.formula + '$$'}
-        </span>
-      );
+      const html = renderMathHtml(token.formula, true);
+      return html
+        ? (
+          <span
+            className="block my-3 overflow-x-auto text-center"
+            dangerouslySetInnerHTML={{ __html: html }}
+          />
+        ) : (
+          <span className="block my-3 text-rose-400 font-mono">
+            {'$$' + token.formula + '$$'}
+          </span>
+        );
     }
 
     case 'inline-math': {
-      const html = renderMath(token.formula, false, token.formula);
-      return html ? (
-        <span
-          key={index}
-          className="inline px-0.5"
-          dangerouslySetInnerHTML={{ __html: html as string }}
-        />
-      ) : (
-        <span key={index} className="text-rose-400 font-mono">
-          {'$' + token.formula + '$'}
-        </span>
-      );
+      const html = renderMathHtml(token.formula, false);
+      return html
+        ? (
+          <span
+            className="inline px-0.5"
+            dangerouslySetInnerHTML={{ __html: html }}
+          />
+        ) : (
+          <span className="text-rose-400 font-mono">
+            {'$' + token.formula + '$'}
+          </span>
+        );
     }
 
     case 'inline-code':
       return (
-        <code
-          key={index}
-          className="px-1.5 py-0.5 mx-0.5 bg-slate-900 border border-slate-800 text-indigo-300 font-mono text-[13px] rounded-md inline font-semibold"
-        >
+        <code className="px-1.5 py-0.5 mx-0.5 bg-slate-900 border border-slate-800 text-indigo-300 font-mono text-[13px] rounded-md inline font-semibold">
           {token.code}
         </code>
       );
 
     case 'bold':
       return (
-        <strong key={index} className="font-extrabold text-slate-100">
+        <strong className="font-extrabold text-slate-100">
           {token.content}
         </strong>
       );
 
     case 'italic':
       return (
-        <em key={index} className="italic text-slate-300">
+        <em className="italic text-slate-300">
           {token.content}
         </em>
       );
 
     case 'text':
       return (
-        <span key={index} className="whitespace-pre-line leading-relaxed">
+        <span className="whitespace-pre-line leading-relaxed">
           {token.content}
         </span>
       );
@@ -196,7 +188,7 @@ export default function RichText({ text, className = '' }: RichTextProps) {
   return (
     <span className={className}>
       {tokens.map((token, i) => (
-        <TokenNode key={i} token={token} index={i} />
+        <TokenNode key={i} token={token} />
       ))}
     </span>
   );
