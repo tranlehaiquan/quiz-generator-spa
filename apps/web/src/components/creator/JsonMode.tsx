@@ -50,7 +50,7 @@ export default function JsonMode({
       <details className="text-xs text-slate-500 group border border-slate-900 rounded-xl p-3 bg-slate-950/20">
         <summary className="cursor-pointer hover:text-slate-300 flex items-center gap-2 font-bold select-none transition">
           <Code2 className="h-4 w-4 text-indigo-400" />
-          <span>{lang === 'vi' ? 'Cấu trúc JSON & Hướng dẫn chi tiết' : 'JSON Schema & Integration Guide'}</span>
+          <span>{lang === 'vi' ? t('ocrTitleVi') : t('ocrTitle')}</span>
         </summary>
         <div className="mt-2 text-slate-500 leading-relaxed pl-6 border-t border-slate-900/60 pt-2 font-medium">
           {t('schemaHelp')}

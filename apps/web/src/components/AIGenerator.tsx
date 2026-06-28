@@ -44,6 +44,7 @@ export default function AIGenerator({ onQuizGenerated, addToast, lang }: AIGener
   const [topic, setTopic] = useState('');
   const [count, setCount] = useState(5);
   const [difficulty, setDifficulty] = useState('medium');
+  const [targetLang, setTargetLang] = useState<'vi' | 'en'>(lang);
   const [provider, setProvider] = useState('deepseek');
   const [model, setModel] = useState('deepseek-chat');
   const [apiKey, setApiKey] = useState('');
@@ -75,7 +76,7 @@ export default function AIGenerator({ onQuizGenerated, addToast, lang }: AIGener
           topic: topic.trim(),
           count,
           difficulty,
-          lang,
+          lang: targetLang,
           provider,
           model,
           ...(apiKey.trim() ? { apiKey: apiKey.trim() } : {}),
@@ -126,7 +127,7 @@ export default function AIGenerator({ onQuizGenerated, addToast, lang }: AIGener
         />
       </div>
 
-      {/* Count + Difficulty row */}
+      {/* Count + Difficulty + Language row */}
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="flex-1 space-y-2">
           <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">{vi ? 'Số lượng câu hỏi' : 'Number of Questions'}</label>
@@ -159,6 +160,21 @@ export default function AIGenerator({ onQuizGenerated, addToast, lang }: AIGener
               <option value="easy">{vi ? '🟢 Dễ (Cơ bản)' : '🟢 Easy (Basic)'}</option>
               <option value="medium">{vi ? '🟡 Trung bình (Khá)' : '🟡 Medium (Intermediate)'}</option>
               <option value="hard">{vi ? '🔴 Khó (Chuyên sâu)' : '🔴 Hard (Advanced)'}</option>
+            </select>
+            <ChevronDown className="h-4 w-4 absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
+          </div>
+        </div>
+
+        <div className="flex-1 space-y-2">
+          <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">{vi ? 'Ngôn ngữ đề thi' : 'Output Language'}</label>
+          <div className="relative">
+            <select
+              value={targetLang}
+              onChange={e => setTargetLang(e.target.value as 'vi' | 'en')}
+              className="w-full appearance-none bg-slate-950/80 border border-slate-800 rounded-xl px-4 py-2.5 text-xs font-semibold text-slate-350 focus:outline-none focus:border-indigo-500/50 transition pr-10 cursor-pointer"
+            >
+              <option value="vi">{vi ? '🇻🇳 Tiếng Việt' : '🇻🇳 Vietnamese'}</option>
+              <option value="en">{vi ? '🇬🇧 Tiếng Anh' : '🇬🇧 English'}</option>
             </select>
             <ChevronDown className="h-4 w-4 absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
           </div>

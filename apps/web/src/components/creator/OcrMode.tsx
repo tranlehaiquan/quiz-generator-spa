@@ -13,7 +13,7 @@ interface OcrModeProps {
   lang: 'vi' | 'en';
 }
 
-export default function OcrMode({ onScanComplete, addToast, t, lang }: OcrModeProps) {
+export default function OcrMode({ onScanComplete, addToast, t }: OcrModeProps) {
   const [isDragOver, setIsDragOver] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
   const [scannerPreviewUrl, setScannerPreviewUrl] = useState<string | null>(null);
@@ -22,25 +22,25 @@ export default function OcrMode({ onScanComplete, addToast, t, lang }: OcrModePr
 
   const handleScanFile = async (file: File) => {
     if (!file.type.startsWith('image/')) {
-      addToast("Invalid File", lang === 'vi' ? "Vui lòng tải lên file hình ảnh." : "Please upload an image file.", "warning");
+      addToast(t('invalidFile'), t('imageUploadRequired'), "warning");
       return;
     }
     if (file.size > 10 * 1024 * 1024) {
-      addToast("File Too Large", lang === 'vi' ? "Ảnh tối đa 10MB." : "Image must be under 10MB.", "warning");
+      addToast(t('fileTooLarge'), t('imageSizeLimit'), "warning");
       return;
     }
 
     setIsScanning(true);
-    setScannerStatus(lang === 'vi' ? "Đang tải ảnh lên máy chủ..." : "Uploading image to server...");
+    setScannerStatus(t('statusUploading'));
 
     const reader = new FileReader();
     reader.onload = (e) => { if (e.target?.result) setScannerPreviewUrl(e.target.result as string); };
     reader.readAsDataURL(file);
 
     const timers = [
-      setTimeout(() => setScannerStatus(lang === 'vi' ? "Khởi động Tesseract OCR..." : "Starting Tesseract OCR engine..."), 1200),
-      setTimeout(() => setScannerStatus(lang === 'vi' ? "Đang nhận diện ký tự tiếng Việt..." : "Recognizing characters & layout..."), 3000),
-      setTimeout(() => setScannerStatus(lang === 'vi' ? "Đang cấu trúc hoá câu hỏi bằng AI..." : "Structuring questions via AI Model..."), 6000),
+      setTimeout(() => setScannerStatus(t('statusStartingOcr')), 1200),
+      setTimeout(() => setScannerStatus(t('statusRecognizing')), 3000),
+      setTimeout(() => setScannerStatus(t('statusStructuring')), 6000),
     ];
 
     try {

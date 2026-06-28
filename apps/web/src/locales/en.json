@@ -104,5 +104,20 @@
   "yourAns": "Your answer",
   "correctAns": "Correct answer",
   "explanation": "Explanation",
-  "actions": "Actions"
+  "actions": "Actions",
+  "quizStarted": "Quiz started!",
+  "quizDeleted": "Quiz deleted!",
+  "historyCleared": "History cleared!",
+  "quizSaved": "Quiz saved!",
+  "quizUpdated": "Quiz updated!",
+  "ocrTitle": "JSON Schema & Integration Guide",
+  "ocrTitleVi": "Cấu trúc JSON & Hướng dẫn chi tiết",
+  "imageUploadRequired": "Please upload an image file.",
+  "imageSizeLimit": "Image must be under 10MB.",
+  "statusUploading": "Uploading image to server...",
+  "statusStartingOcr": "Starting Tesseract OCR engine...",
+  "statusRecognizing": "Recognizing characters & layout...",
+  "statusStructuring": "Structuring questions via AI Model...",
+  "invalidFile": "Invalid File",
+  "fileTooLarge": "File Too Large"
 }

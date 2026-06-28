@@ -684,8 +684,10 @@ function AppContent() {
   const [lastResult, setLastResult] = useState<QuizResult | null>(null);
 
   const { t, i18n } = useTranslation();
-  const lang = (i18n.language?.startsWith('en') ? 'en' : 'vi') as 'vi' | 'en';
-  const setLang = (l: 'vi' | 'en') => { i18n.changeLanguage(l); };
+  const lang = (i18n.language === 'en' || i18n.language?.startsWith('en') ? 'en' : 'vi') as 'vi' | 'en';
+  const setLang = (l: 'vi' | 'en') => {
+    i18n.changeLanguage(l);
+  };
 
   const addToast = (title: string, message: string, type: 'success' | 'error' | 'warning' | 'info' = 'info') => {
     const options = { description: message };
@@ -718,7 +720,7 @@ function AppContent() {
 
   const handleStartQuiz = (quiz: Quiz) => {
     router.navigate({ to: `/player/${quiz.id}` });
-    addToast(quiz.title, lang === 'vi' ? "Đã bắt đầu làm bài!" : "Quiz started!", "info");
+    addToast(quiz.title, t('quizStarted'), "info");
   };
 
   const handleFinishQuiz = async (
@@ -783,7 +785,7 @@ function AppContent() {
         { headers: { Authorization: `Bearer ${auth.token}` } },
       );
       if (res.ok) {
-        addToast(t('success'), lang === 'vi' ? "Đã xóa đề thi!" : "Quiz deleted!", "success");
+        addToast(t('success'), t('quizDeleted'), "success");
         fetchData();
       } else {
         addToast("Error", "Could not delete this quiz.", "error");
@@ -801,7 +803,7 @@ function AppContent() {
       );
       if (res.ok) {
         setHistory([]);
-        addToast(t('success'), lang === 'vi' ? "Đã xóa toàn bộ lịch sử!" : "History cleared!", "success");
+        addToast(t('success'), t('historyCleared'), "success");
       }
     } catch {
       addToast("Error", "Failed to clear history.", "error");
@@ -838,12 +840,12 @@ function AppContent() {
           onClearHistory: handleClearHistory,
           onNavigateToCreate: () => router.navigate({ to: '/creator', search: { mode: 'json' } }),
           onQuizCreated: (nq) => {
-            addToast(lang === 'vi' ? "Đã lưu đề thi!" : "Quiz saved!", nq.title, "success");
+            addToast(t('quizSaved'), nq.title, "success");
             fetchData();
             handleStartQuiz(nq);
           },
           onQuizUpdated: (nq) => {
-            addToast(lang === 'vi' ? "Đã cập nhật đề thi!" : "Quiz updated!", nq.title, "success");
+            addToast(t('quizUpdated'), nq.title, "success");
             fetchData();
             router.navigate({ to: '/' });
           },

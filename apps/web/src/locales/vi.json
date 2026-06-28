@@ -104,5 +104,20 @@
   "yourAns": "Lựa chọn của bạn",
   "correctAns": "Đáp án đúng",
   "explanation": "Giải thích chi tiết",
-  "actions": "Hành động"
+  "actions": "Hành động",
+  "quizStarted": "Đã bắt đầu làm bài!",
+  "quizDeleted": "Đã xóa đề thi!",
+  "historyCleared": "Đã xóa toàn bộ lịch sử!",
+  "quizSaved": "Đã lưu đề thi!",
+  "quizUpdated": "Đã cập nhật đề thi!",
+  "ocrTitle": "JSON Schema & Integration Guide",
+  "ocrTitleVi": "Cấu trúc JSON & Hướng dẫn chi tiết",
+  "imageUploadRequired": "Vui lòng tải lên file hình ảnh.",
+  "imageSizeLimit": "Ảnh tối đa 10MB.",
+  "statusUploading": "Đang tải ảnh lên máy chủ...",
+  "statusStartingOcr": "Khởi động Tesseract OCR...",
+  "statusRecognizing": "Đang nhận diện ký tự tiếng Việt...",
+  "statusStructuring": "Đang cấu trúc hoá câu hỏi bằng AI...",
+  "invalidFile": "Định dạng file không hợp lệ",
+  "fileTooLarge": "File quá dung lượng"
 }
