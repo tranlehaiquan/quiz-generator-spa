@@ -96,6 +96,11 @@ interface AppData {
   allowSignup: boolean;
   needsSetup: boolean;
   stats: { playedCount: number; avgScore: number; savedCount: number };
+  lang: 'vi' | 'en';
+  setLang: (l: 'vi' | 'en') => void;
+  showHelpModal: boolean;
+  setShowHelpModal: React.Dispatch<React.SetStateAction<boolean>>;
+  t: TFunction;
 }
 
 const AppDataContext = createContext<AppData>({
@@ -107,6 +112,11 @@ const AppDataContext = createContext<AppData>({
   allowSignup: true,
   needsSetup: false,
   stats: { playedCount: 0, avgScore: 0, savedCount: 0 },
+  lang: 'vi',
+  setLang: () => {},
+  showHelpModal: false,
+  setShowHelpModal: () => {},
+  t: ((key: string) => key) as any,
 });
 
 export function useAppData() {
@@ -282,7 +292,7 @@ function RootComponent() {
   const context = rootRoute.useRouteContext();
   const routeRouter = useRouter();
   const routerState = useRouterState();
-  const { user, isAuthLoading, allowSignup } = useAppData();
+  const { user, isAuthLoading, allowSignup, lang, setLang, showHelpModal, setShowHelpModal, t } = useAppData();
   const isPlaying = routerState.location.pathname.startsWith('/player');
   const isAuthPage = ['/login', '/signup'].includes(routerState.location.pathname);
 
@@ -314,7 +324,7 @@ function RootComponent() {
                   activeProps={{ className: 'bg-indigo-600/10 text-indigo-300 border-indigo-500/25 hover:bg-indigo-600/15' }}
                 >
                   <LayoutDashboard className="h-4 w-4 mr-1.5" />
-                  <span className="hidden sm:inline">{context.t('dashboard')}</span>
+                  <span className="hidden sm:inline">{t('dashboard')}</span>
                 </Link>
 
                 {user && (
@@ -326,7 +336,7 @@ function RootComponent() {
                       activeProps={{ className: 'bg-indigo-600/10 text-indigo-300 border-indigo-500/25 hover:bg-indigo-600/15' }}
                     >
                       <PlusCircle className="h-4 w-4 mr-1.5" />
-                      <span className="hidden sm:inline">{context.t('createQuiz')}</span>
+                      <span className="hidden sm:inline">{t('createQuiz')}</span>
                     </Link>
                   </>
                 )}
@@ -339,12 +349,12 @@ function RootComponent() {
               variant="ghost"
               size="icon"
               className="relative rounded-xl h-9 w-9 text-slate-400 hover:text-indigo-300 hover:bg-indigo-600/5 border border-transparent hover:border-indigo-500/10 transition duration-200"
-              onClick={() => context.setLang(context.lang === 'vi' ? 'en' : 'vi')}
+              onClick={() => setLang(lang === 'vi' ? 'en' : 'vi')}
               title="Switch Language"
             >
               <Languages className="h-4 w-4" />
               <span className="text-[9px] font-bold absolute -bottom-1 -right-1 bg-indigo-600 text-white rounded-md px-1 py-0.5 border border-indigo-500 scale-75 uppercase">
-                {context.lang}
+                {lang}
               </span>
             </Button>
 
@@ -353,7 +363,7 @@ function RootComponent() {
                 variant="ghost"
                 size="icon"
                 className="rounded-xl h-9 w-9 text-slate-400 hover:text-indigo-300 hover:bg-indigo-600/5 border border-transparent hover:border-indigo-500/10 transition duration-200"
-                onClick={() => context.setShowHelpModal(true)}
+                onClick={() => setShowHelpModal(true)}
               >
                 <HelpCircle className="h-4 w-4" />
               </Button>
@@ -396,7 +406,7 @@ function RootComponent() {
                             className="w-full flex items-center space-x-2 px-3 py-2 rounded-xl text-sm text-slate-400 hover:text-rose-400 hover:bg-slate-800/50 transition duration-200"
                           >
                             <LogOut className="h-4 w-4" />
-                            <span>{context.t('logout')}</span>
+                            <span>{t('logout')}</span>
                           </button>
                         </div>
                       </>
@@ -409,7 +419,7 @@ function RootComponent() {
                       className="rounded-xl flex items-center text-xs sm:text-sm h-8 px-3 text-slate-400 hover:text-slate-100 hover:bg-slate-800/40 transition duration-200"
                     >
                       <LogIn className="h-4 w-4 mr-1.5" />
-                      <span className="hidden sm:inline">{context.t('login')}</span>
+                      <span className="hidden sm:inline">{t('login')}</span>
                     </Link>
                     {allowSignup && (
                       <Link
@@ -417,7 +427,7 @@ function RootComponent() {
                         className="rounded-xl flex items-center text-xs sm:text-sm h-8 px-3 bg-indigo-600 hover:bg-indigo-500 text-white transition duration-200"
                       >
                         <UserPlus className="h-4 w-4 mr-1.5" />
-                        <span className="hidden sm:inline">{context.t('signup')}</span>
+                        <span className="hidden sm:inline">{t('signup')}</span>
                       </Link>
                     )}
                   </div>
@@ -437,29 +447,29 @@ function RootComponent() {
       <Toaster />
 
       {/* Help Modal */}
-      {context.showHelpModal && (
+      {showHelpModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="w-full max-w-lg bg-slate-900/95 border border-slate-800 rounded-3xl p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
             <div className="flex justify-between items-center border-b border-slate-800 pb-4">
               <h3 className="text-lg font-bold text-slate-100 flex items-center space-x-2">
                 <BrainCircuit className="h-5 w-5 text-indigo-400" />
-                <span>{context.t('helpTitle')}</span>
+                <span>{t('helpTitle')}</span>
               </h3>
               <Button
                 variant="ghost"
                 size="icon"
                 className="h-8 w-8 rounded-full"
-                onClick={() => context.setShowHelpModal(false)}
+                onClick={() => setShowHelpModal(false)}
               >
                 <X className="h-4 w-4" />
               </Button>
             </div>
             <div className="space-y-4 py-4 text-sm leading-relaxed text-slate-300">
-              <p>{context.t('helpDesc')}</p>
+              <p>{t('helpDesc')}</p>
               <div className="p-3 bg-slate-950/50 border border-slate-800 rounded-2xl space-y-2">
-                <p className="text-slate-200">{context.t('helpStep1')}</p>
-                <p className="text-slate-200">{context.t('helpStep2')}</p>
-                <p className="text-slate-200">{context.t('helpStep3')}</p>
+                <p className="text-slate-200">{t('helpStep1')}</p>
+                <p className="text-slate-200">{t('helpStep2')}</p>
+                <p className="text-slate-200">{t('helpStep3')}</p>
               </div>
               <p className="text-xs text-indigo-400/80 font-medium">
                 AeroQuiz v1.0 · React + TanStack Router + Hono RPC + Tailwind v4
@@ -468,9 +478,9 @@ function RootComponent() {
             <div className="flex justify-end pt-2 border-t border-slate-800">
               <Button
                 className="rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white"
-                onClick={() => context.setShowHelpModal(false)}
+                onClick={() => setShowHelpModal(false)}
               >
-                {context.t('helpClose')}
+                {t('helpClose')}
               </Button>
             </div>
           </div>
@@ -482,7 +492,7 @@ function RootComponent() {
 
 function IndexComponent() {
   const context = indexRoute.useRouteContext();
-  const { quizzes, history, stats } = useAppData();
+  const { quizzes, history, stats, t } = useAppData();
   return (
     <Dashboard
       quizzes={quizzes}
@@ -493,7 +503,7 @@ function IndexComponent() {
       onEditQuiz={context.onEditQuiz}
       onClearHistory={context.onClearHistory}
       onNavigateToCreate={context.onNavigateToCreate}
-      t={context.t}
+      t={t}
       addToast={context.addToast}
       token={context.token}
     />
@@ -514,6 +524,7 @@ function SetupComponent() {
 
 function CreatorComponent() {
   const context = creatorRoute.useRouteContext();
+  const { t, lang } = useAppData();
   const routeRouter = useRouter();
   const { mode } = creatorRoute.useSearch();
   const currentMode: 'json' | 'ai' | 'ocr' = (mode === 'ai' || mode === 'ocr' ? mode : 'json') as 'json' | 'ai' | 'ocr';
@@ -524,17 +535,17 @@ function CreatorComponent() {
       onQuizCreated={context.onQuizCreated}
       onCancel={() => routeRouter.navigate({ to: '/' })}
       addToast={context.addToast}
-      t={context.t}
-      lang={context.lang}
+      t={t}
+      lang={lang}
     />
   );
 }
 
 function EditorComponent() {
   const context = editorRoute.useRouteContext();
+  const { t, lang, quizzes } = useAppData();
   const routeRouter = useRouter();
   const { quizId } = editorRoute.useParams();
-  const { quizzes } = useAppData();
 
   const quiz = quizzes.custom.find(q => q.id === quizId) ?? null;
 
@@ -554,8 +565,8 @@ function EditorComponent() {
       onQuizUpdated={context.onQuizUpdated}
       onCancel={() => routeRouter.navigate({ to: '/' })}
       addToast={context.addToast}
-      t={context.t}
-      lang={context.lang}
+      t={t}
+      lang={lang}
       editingQuiz={quiz}
     />
   );
@@ -563,6 +574,7 @@ function EditorComponent() {
 
 function LeaderboardComponent() {
   const context = leaderboardRoute.useRouteContext();
+  const { lang } = useAppData();
   const routeRouter = useRouter();
   const { quizId } = leaderboardRoute.useParams();
 
@@ -571,7 +583,7 @@ function LeaderboardComponent() {
       quizId={quizId}
       token={context.token!}
       onBack={() => routeRouter.navigate({ to: '/' })}
-      lang={context.lang}
+      lang={lang}
     />
   );
 }
@@ -580,7 +592,7 @@ function PlayerComponent() {
   const context = playerRoute.useRouteContext();
   const { quizId } = playerRoute.useParams();
   const routeRouter = useRouter();
-  const { quizzes } = useAppData();
+  const { quizzes, t, lang } = useAppData();
 
   const [quiz, setQuiz] = useState<Quiz | null>(null);
   const [loading, setLoading] = useState(true);
@@ -640,8 +652,8 @@ function PlayerComponent() {
         context.onFinishQuiz(quiz, correctCount, totalCount, timeTakenStr, answers, elapsedSeconds, guestName)
       }
       onExitQuiz={() => routeRouter.navigate({ to: '/' })}
-      t={context.t}
-      lang={context.lang}
+      t={t}
+      lang={lang}
       recordMode={isRecordMode}
     />
   );
@@ -649,6 +661,7 @@ function PlayerComponent() {
 
 function ResultsComponent() {
   const context = resultsRoute.useRouteContext();
+  const { t } = useAppData();
   const routeRouter = useRouter();
 
   useEffect(() => {
@@ -666,7 +679,7 @@ function ResultsComponent() {
       elapsedSeconds={context.lastResult.elapsedSeconds}
       onRetake={() => context.onStartQuiz(context.lastResult!.quiz)}
       onHome={() => routeRouter.navigate({ to: '/' })}
-      t={context.t}
+      t={t}
       addToast={context.addToast}
     />
   );
@@ -824,6 +837,11 @@ function AppContent() {
     isAuthLoading: auth.isLoading,
     allowSignup: auth.allowSignup,
     needsSetup: auth.needsSetup,
+    lang,
+    setLang,
+    showHelpModal,
+    setShowHelpModal,
+    t,
   };
 
   return (
