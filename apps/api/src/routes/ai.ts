@@ -11,12 +11,18 @@ const QuizSchema = z.object({
   description: z.string().describe('Short engaging description of this quiz'),
   tags: z.array(z.string()).describe('2-3 relevant topic tags'),
   questions: z.array(z.object({
-    question: z.string().describe('The quiz question text'),
-    options: z.array(z.string()).length(4).describe('Exactly 4 answer choices'),
+    type: z.enum(['factual', 'scenario', 'debug', 'conceptual', 'fill-in'])
+      .describe('The style/format of this question — rotate across types, do not repeat the same type more than twice in a row'),
+    question: z.string().describe('The quiz question text — vary the opening phrase, never always start with "What is..." or "Which of the following..."'),
+    options: z.array(z.string()).length(4).describe('Exactly 4 answer choices — wrong answers must reflect real, common misconceptions, not obviously wrong distractors'),
     answer: z.string().describe('The correct answer, must exactly match one of the options'),
-    explanation: z.string().describe('Brief explanation why this answer is correct'),
+    explanation: z.string().describe('2–3 sentence explanation that teaches the concept, not just restates the answer'),
+    hint: z.string().optional().describe('Optional subtle hint that nudges thinking without giving away the answer'),
   })).min(1).max(20),
 });
+
+const TECHNICAL_TOPIC_PATTERN =
+  /code|program|math|calcul|algorithm|sql|javascript|typescript|python|java|react|angular|vue|css|html|linux|bash|shell|network|database|api|rest|graphql|docker|kubernetes|git|physics|chemistry|equation|formula|derivative|integral/i;
 
 const ai = new Hono()
   .post('/generate', async (c) => {
@@ -41,8 +47,8 @@ const ai = new Hono()
       const resolvedAlibabaKey = apiKey || process.env.ALIBABA_API_KEY || '';
 
       const langInstruction = lang === 'vi'
-        ? 'Generate quiz content in Vietnamese language.'
-        : 'Generate quiz content in English language.';
+        ? 'Generate all quiz content in Vietnamese language.'
+        : 'Generate all quiz content in English language.';
 
       const difficultyMap: Record<string, string> = {
         easy: lang === 'vi' ? 'dễ (phù hợp cho người mới bắt đầu)' : 'easy (beginner-friendly)',
@@ -50,19 +56,49 @@ const ai = new Hono()
         hard: lang === 'vi' ? 'khó (chuyên sâu và đòi hỏi suy luận)' : 'hard (advanced reasoning required)',
       };
 
-      const systemPrompt = `You are an expert quiz creator and educator. ${langInstruction}
-Create high-quality multiple-choice quiz questions. Each question must have exactly 4 answer options and one clearly correct answer. Include a brief explanation for why the correct answer is right.
+      const isTechnical = TECHNICAL_TOPIC_PATTERN.test(topic);
 
-IMPORTANT - Formatting: Use the following syntax for rich text in questions, options, and explanations:
-- For math formulas: use $...$ for inline math (e.g., $x^2 + y^2 = r^2$) and $$...$$ for display/block math (e.g., $$E = mc^2$$)
-- For code: use \`...\` for inline code (e.g., \`Array.map()\`) and \`\`\`...\`\`\` for code blocks
-- For bold text: use **...** (e.g., **important concept**)
-- For italic text: use *...* (e.g., *emphasis*)
-Always use these format markers when questions involve math, programming, or technical content.`;
+      const formatReminder = isTechnical
+        ? `\nThis is a technical topic — you MUST use code blocks (\`\`\`language\\n...\\n\`\`\`) or math notation ($...$) in at least 60% of questions and options where relevant.`
+        : `\nThis is a conceptual topic — use **bold** to highlight key terms and *italics* for emphasis where helpful. Keep formatting purposeful, not decorative.`;
+
+      const systemPrompt = `You are an expert quiz creator and educator. ${langInstruction}
+
+## Your Goal
+Create engaging, high-quality multiple-choice questions that feel dynamic — not flat or repetitive. Every question should challenge the reader to think, not just recall.
+
+## Question Type Variety
+You MUST rotate across these formats and include each at least once when count >= 5:
+- **factual**: Direct knowledge check. e.g. "What does \`Array.prototype.reduce()\` return when the array is empty and no initial value is provided?"
+- **scenario**: Real-world situation. e.g. "A developer needs to merge two large sorted arrays efficiently. Which approach minimizes time complexity?"
+- **debug**: Find the error. e.g. "The following code throws a runtime error. What is the cause? \`\`\`js\\nconst x = null;\\nconsole.log(x.length);\\n\`\`\`"
+- **conceptual**: Why/how reasoning. e.g. "Why does \`0.1 + 0.2 !== 0.3\` in most programming languages?"
+- **fill-in**: Complete the blank. e.g. "The derivative of $\\sin(x)$ with respect to $x$ is ___."
+
+Never start more than 2 questions in a row with the same phrasing. Avoid overusing "What is..." or "Which of the following...".
+
+## Formatting Rules (MANDATORY — apply whenever relevant)
+- Inline math: \`$...$\` → e.g. The area of a circle is $A = \\pi r^2$
+- Block/display math: \`$$...$$\` → e.g. $$\\int_0^\\infty e^{-x}\\,dx = 1$$
+- Inline code: backtick → e.g. \`Array.map()\` returns a new array
+- Code block: triple backtick + language → \`\`\`js\\nconst x = 1;\\n\`\`\`
+- Bold key term: \`**...**\` → e.g. **closures** capture variables from their enclosing scope
+- Italic emphasis: \`*...*\` → e.g. this is *not* the same as a shallow copy
+
+Use these markers in questions, options, and explanations. Plain text is fine only for purely non-technical, non-mathematical content.
+
+## Answer Quality Rules
+- All 4 options must be plausible to someone who hasn't mastered the topic
+- Wrong answers should reflect genuine misconceptions, not obviously absurd choices
+- Avoid options like "None of the above" or "All of the above"
+- Explanations must teach the concept in 2–3 sentences — not just restate which answer is correct`;
 
       const userPrompt = `Create a quiz with exactly ${count} questions about: "${topic}".
-Difficulty level: ${difficultyMap[difficulty] || difficultyMap.medium}.
+Difficulty: ${difficultyMap[difficulty] || difficultyMap.medium}.
 ${langInstruction}
+${formatReminder}
+
+Distribute question types evenly. Do not repeat the same type more than twice consecutively.
 Return a well-structured quiz following the exact schema provided.`;
 
       let aiModel;
